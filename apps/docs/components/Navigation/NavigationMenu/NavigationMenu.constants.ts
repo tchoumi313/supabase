@@ -536,6 +536,11 @@ export const database: NavMenuConstant = {
       ],
     },
     {
+      name: 'Community',
+      url: undefined,
+      items: [{ name: 'Examples', url: '/guides/database/community/examples' }],
+    },
+    {
       name: 'Extensions',
       url: undefined,
       items: [
