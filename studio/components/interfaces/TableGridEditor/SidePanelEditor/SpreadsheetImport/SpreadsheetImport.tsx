@@ -63,12 +63,35 @@ const SpreadsheetImport = ({
   })
   const [errors, setErrors] = useState<any>([])
   const [selectedHeaders, setSelectedHeaders] = useState<string[]>([])
+  const [selectedColumnTypeMap, setSelectedColumnTypeMap] = useState<any>([])
 
-  const selectedTableColumns = (selectedTable?.columns ?? []).map((column) => column.name)
+  const selectedTableColumns = (selectedTable?.columns ?? []).map((column) => ({ name: column.name, format: column.format }))
   const incompatibleHeaders = selectedHeaders.filter(
-    (header) => !selectedTableColumns.includes(header)
+    (header) => !selectedTableColumns.some((column) => column.name === header)
   )
   const isCompatible = selectedTable !== undefined ? incompatibleHeaders.length === 0 : true
+
+  const checkInferredColumnTypes = (columnTypeMap: any) => {
+    // all of the other types can in theory be casted into a string
+    // e.g. a column with type of text can still contain the value "1", but inferColumnType() will 
+    // still infer it as an int8
+    const stringTypes = ['text', 'varchar']
+    const lookup: { [key: string]: string[] } = {
+      int8: ['int2', 'int4', 'int8', 'float4', 'float8', 'numeric', ...stringTypes],
+      float8: ['float4', 'float8', 'numeric', ...stringTypes],
+      jsonb: ['json', 'jsonb', ...stringTypes],
+      text: ['uuid', ...stringTypes],
+      timestamptz: ['date', 'time', 'timetz', 'timestamp', 'timestamptz', ...stringTypes],
+      bool: ['bool', ...stringTypes],
+    }
+    return selectedTableColumns
+      .filter((c) => Object.keys(columnTypeMap).includes(c.name))
+      .filter((c) => !lookup[columnTypeMap[c.name]].includes(c.format))
+      .map((c) => ({ name: c.name, format: columnTypeMap[c.name], expectedFormat: c.format }))
+  }
+
+  const incompatibleTypeColumns = checkInferredColumnTypes(selectedColumnTypeMap)
+  const isTypeCompatible = selectedTable !== undefined ? selectedColumnTypeMap.length === 0 : true
 
   const onProgressUpdate = (progress: number) => {
     setParseProgress(progress)
@@ -120,6 +143,7 @@ const SpreadsheetImport = ({
 
       setErrors(errors)
       setSelectedHeaders(headers)
+      setSelectedColumnTypeMap(columnTypeMap)
       setSpreadsheetData({ headers, rows: previewRows, rowCount, columnTypeMap })
     }
     event.target.value = ''
@@ -144,8 +168,10 @@ const SpreadsheetImport = ({
           duration: 4000,
         })
       }
+
       setErrors(errors)
       setSelectedHeaders(headers)
+      setSelectedColumnTypeMap(columnTypeMap)
       setSpreadsheetData({ headers, rows, rowCount: rows.length, columnTypeMap })
     } else {
       setSpreadsheetData(EMPTY_SPREADSHEET_DATA)
@@ -178,7 +204,7 @@ const SpreadsheetImport = ({
         message: 'Please select at least one header from your CSV',
       })
       resolve()
-    } else if (!isCompatible) {
+    } else if (!(isCompatible && isTypeCompatible)) {
       ui.setNotification({
         category: 'error',
         message: 'The data that you are trying to import is incompatible with your table structure',
@@ -250,6 +276,7 @@ const SpreadsheetImport = ({
             errors={errors}
             selectedHeaders={selectedHeaders}
             incompatibleHeaders={incompatibleHeaders}
+            incompatibeTypeColumns={incompatibleTypeColumns}
           />
           <SidePanel.Separator />
         </>
