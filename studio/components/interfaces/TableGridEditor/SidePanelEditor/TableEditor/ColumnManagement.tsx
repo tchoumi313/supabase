@@ -211,7 +211,7 @@ const ColumnManagement = ({
                       ].join(' ')}
                     >
                       <span className="text-xs text-scale-1200">
-                        Recommended to use lowercase and use an underscore to separate words e.g.
+                        Recommended to use only lowercase letters, with an underscore to separate words e.g.
                         column_name
                       </span>
                     </div>
