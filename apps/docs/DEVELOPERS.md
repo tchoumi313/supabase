@@ -25,7 +25,7 @@ For a complete run-down on how all of our tools work together, see the main DEVE
 
 ### Guides
 
-The primary, instructional type of content. Basically anything that lives on the `https://supabase.com/docs/guides` route. This includes Guides for Auth, Database, Storage, Realtime, Edge Functions, as well as general resources, self-hosting instructions, and integrations. These are all [`.mdx`](https://mdxjs.com/) files — a combination of Markdown and Javascript.
+The primary, instructional type of content. Basically anything that lives on the `https://supabase.com/docs/guides` route. This includes Guides for Auth, Database, Storage, Realtime, Edge Functions, as well as general resources, self-hosting instructions, and integrations. These are all [`.mdx`](https://mdxjs.com/) files — a combination of Markdown and JavaScript.
 
 #### Things to know
 
@@ -36,8 +36,8 @@ Some things to note:
 1. The files need to import a Layout at the top
 2. The files need to export a `Page` at the bottom with the `<Layout>` component
 3. The files frontmatter is stored in `const meta = {}`. You should always include `title` and `description`.
-4. You can write Markdown as you normally would, but you can also write regular Javascript and JSX. Note the `examples` array that we iterate over.
-5. Any Javascript variables you use in these files need to be exported in order to be used (i.e., `export const examples = []`).
+4. You can write Markdown as you normally would, but you can also write regular JavaScript and JSX. Note the `examples` array that we iterate over.
+5. Any JavaScript variables you use in these files need to be exported in order to be used (i.e., `export const examples = []`).
 
 ##### Using components
 

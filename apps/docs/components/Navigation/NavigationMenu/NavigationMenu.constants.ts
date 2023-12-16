@@ -687,7 +687,7 @@ export const database: NavMenuConstant = {
           url: '/guides/database/extensions/hypopg',
         },
         {
-          name: 'plv8: Javascript Language',
+          name: 'plv8: JavaScript Language',
           url: '/guides/database/extensions/plv8',
         },
         { name: 'http: RESTful Client', url: '/guides/database/extensions/http' },

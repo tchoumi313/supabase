@@ -128,7 +128,7 @@ export const SERVICE_OPTIONS = [
 export const GITHUB_LINKS = [
   {
     name: 'supabase-js',
-    description: 'For issues with our Javascript client',
+    description: 'For issues with our JavaScript client',
     url: 'https://github.com/supabase/supabase-js/issues',
   },
   {

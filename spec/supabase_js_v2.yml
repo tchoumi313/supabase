@@ -2,7 +2,7 @@ openref: 0.1
 
 info:
   id: reference/supabase-js
-  title: Supabase Javascript Client
+  title: Supabase JavaScript Client
   description: |
 
     Supabase JavaScript.

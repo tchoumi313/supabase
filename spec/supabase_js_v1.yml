@@ -1835,7 +1835,7 @@ functions:
           .not('arraycol','cs','{"a","b"}') // Use Postgres array {} for array column and 'cs' for contains.
           .not('rangecol','cs','(1,2]') // Use Postgres range syntax for range column.
           .not('id','in','(6,7)')  // Use Postgres list () for in filter.
-          .not('id','in',`(${arr})`)  // You can insert a javascript array.
+          .not('id','in',`(${arr})`)  // You can insert a JavaScript array.
         ```
     examples:
       - id: with-select
@@ -2346,7 +2346,7 @@ functions:
         It is very useful for finding rows where a tag array contains all the values in the filter array.
 
         ```js
-        .contains('arraycol',["a","b"]) // You can use a javascript array for an array column
+        .contains('arraycol',["a","b"]) // You can use a JavaScript array for an array column
         .contains('arraycol','{"a","b"}') // You can use a string with Postgres array {} for array column.
         .contains('rangecol','(1,2]') // Use Postgres range syntax for range column.
         .contains('rangecol',`(${arr}]`) // You can insert an array into a string.
@@ -2397,7 +2397,7 @@ functions:
       - `.containedBy()` can work on array columns or range columns.
 
         ```js
-        .containedBy('arraycol',["a","b"]) // You can use a javascript array for an array column
+        .containedBy('arraycol',["a","b"]) // You can use a JavaScript array for an array column
         .containedBy('arraycol','{"a","b"}') // You can use a string with Postgres array {} for array column.
         .containedBy('rangecol','(1,2]') // Use Postgres range syntax for range column.
         .containedBy('rangecol',`(${arr}]`) // You can insert an array into a string.
@@ -2658,7 +2658,7 @@ functions:
       - `.overlaps()` can work on array columns or range columns.
 
         ```js
-        .overlaps('arraycol',["a","b"]) // You can use a javascript array for an array column
+        .overlaps('arraycol',["a","b"]) // You can use a JavaScript array for an array column
         .overlaps('arraycol','{"a","b"}') // You can use a string with Postgres array {} for array column.
         .overlaps('rangecol','(1,2]') // Use Postgres range syntax for range column.
         .overlaps('rangecol',`(${arr}]`)  // You can insert an array into a string.
@@ -2774,7 +2774,7 @@ functions:
           .filter('arraycol','cs','{"a","b"}') // Use Postgres array {} for array column and 'cs' for contains.
           .filter('rangecol','cs','(1,2]') // Use Postgres range syntax for range column.
           .filter('id','in','(6,7)')  // Use Postgres list () for in filter.
-          .filter('id','in',`(${arr})`)  // You can insert a javascript array.
+          .filter('id','in',`(${arr})`)  // You can insert a JavaScript array.
         ```
     examples:
       - id: with-select

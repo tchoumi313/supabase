@@ -33,7 +33,7 @@ const supabase = createClient(
 )
 ```
 
-This raises an interesting question however: "if my anon key is in the client, then can't someone read my javascript and steal my key?", the answer is yes. And this is where Postgres policies come in.
+This raises an interesting question however: "if my anon key is in the client, then can't someone read my JavaScript and steal my key?", the answer is yes. And this is where Postgres policies come in.
 
 Using Postgres's "Row-Level-Security" policies, we can set rules on what data the anon key is allowed or not allowed to access by default.
 
