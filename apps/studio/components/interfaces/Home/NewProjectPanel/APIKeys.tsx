@@ -32,7 +32,7 @@ const APIKeys = () => {
   const { ref: projectRef } = useParams()
 
   const availableLanguages = [
-    { name: 'Javascript', key: 'js' },
+    { name: 'JavaScript', key: 'js' },
     { name: 'Dart', key: 'dart' },
   ]
   const [selectedLanguage, setSelectedLanguage] = useState(availableLanguages[0])

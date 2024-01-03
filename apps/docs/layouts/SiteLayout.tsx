@@ -76,11 +76,11 @@ const levelsData = {
   },
   reference_javascript_v1: {
     icon: '/docs/img/icons/menu/reference-javascript',
-    name: 'Javascript Reference v1.0',
+    name: 'JavaScript Reference v1.0',
   },
   reference_javascript_v2: {
     icon: '/docs/img/icons/menu/reference-javascript',
-    name: 'Javascript Reference v2.0',
+    name: 'JavaScript Reference v2.0',
   },
   reference_dart_v1: {
     icon: '/docs/img/icons/menu/reference-dart',
