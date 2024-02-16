@@ -20,6 +20,7 @@ import {
   Input,
   Listbox,
   SidePanel,
+  IconExternalLink,
 } from 'ui'
 import { HTTPArgument } from './EditHookPanel'
 
@@ -63,7 +64,27 @@ const HTTPRequestFields = ({
     <>
       <FormSection
         header={
-          <FormSectionLabel className="lg:!col-span-4">
+          <FormSectionLabel
+            className="lg:!col-span-4"
+            description={
+              <div>
+                <Button
+                  asChild
+                  type="default"
+                  className="text-foreground-light hover:text-foreground"
+                  icon={<IconExternalLink size={12} strokeWidth={2} />}
+                >
+                  <a
+                    href="https://supabase.com/docs/guides/database/webhooks#timeout"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    About timeouts and retries
+                  </a>
+                </Button>
+              </div>
+            }
+          >
             {type === 'http_request'
               ? 'HTTP Request'
               : type === 'supabase_function'
@@ -119,9 +140,17 @@ const HTTPRequestFields = ({
             id="timeout_ms"
             name="timeout_ms"
             label="Timeout"
-            labelOptional="Between 1000ms to 5000ms"
+            labelOptional="Between 1000ms to 10,000ms"
             type="number"
             actions={<p className="text-foreground-light pr-2">ms</p>}
+          />
+          <Input
+            id="max_retries"
+            name="max_retries"
+            label="Number of retries"
+            labelOptional="Between 0 to 5"
+            type="number"
+            actions={<p className="text-foreground-light pr-2"></p>}
           />
         </FormSectionContent>
       </FormSection>
