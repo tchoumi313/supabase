@@ -72,7 +72,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'NODE_ENV=test npm --prefix ../apps/studio run dev',
+    command: 'NODE_ENV=test npm --prefix ../../apps/studio run dev',
     url: 'http://localhost:8082',
     reuseExistingServer: !process.env.CI,
   },
