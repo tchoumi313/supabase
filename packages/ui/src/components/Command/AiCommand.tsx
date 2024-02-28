@@ -29,8 +29,9 @@ import { useCommandMenu } from './CommandMenuProvider'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { cn } from './../../lib/utils'
+import { useRouter } from 'next/router'
 
-const questions = [
+const defaultQuestions = [
   'How do I get started with Supabase?',
   'How do I run Supabase locally?',
   'How do I connect to my database?',
@@ -38,6 +39,8 @@ const questions = [
   'How do I listen to changes in a table?',
   'How do I set up authentication?',
 ]
+
+const supportQuestions = ['What is the problem you are having?']
 
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
@@ -56,6 +59,8 @@ export interface Message {
   role: MessageRole
   content: string
   status: MessageStatus
+  supportFirstPrompt?: boolean
+  supportSecondPrompt?: string
 }
 
 interface NewMessageAction {
@@ -65,13 +70,11 @@ interface NewMessageAction {
 
 interface UpdateMessageAction {
   type: 'update'
-  index: number
   message: Partial<Message>
 }
 
 interface AppendContentAction {
   type: 'append-content'
-  index: number
   content: string
 }
 
@@ -92,17 +95,14 @@ function messageReducer(state: Message[], messageAction: MessageAction) {
       break
     }
     case 'update': {
-      const { index, message } = messageAction
-      if (current[index]) {
-        Object.assign(current[index], message)
-      }
+      const { message } = messageAction
+      Object.assign(current[current.length - 1], message)
+
       break
     }
     case 'append-content': {
-      const { index, content } = messageAction
-      if (current[index]) {
-        current[index].content += content
-      }
+      const { content } = messageAction
+      current[current.length - 1].content += content
       break
     }
     case 'reset': {
@@ -131,8 +131,95 @@ export function useAiChat({
   const [isResponding, setIsResponding] = useState(false)
   const [hasError, setHasError] = useState(false)
 
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(1)
   const [messages, dispatchMessage] = useReducer(messageReducer, [])
+
+  const router = useRouter()
+  const projectRef = router.query.ref
+
+  const [isInputDisabled, setIsInputDisabled] = useState(false)
+  const [submittedFeedback, setSubmittedFeedback] = useState<'yes' | 'no' | null>(null)
+
+  const handleFeedback = (feedback: 'yes' | 'no') => {
+    dispatchMessage({
+      type: 'update',
+      message: {
+        supportFirstPrompt: false,
+      },
+    })
+
+    if (feedback === 'no') {
+      dispatchMessage({
+        type: 'update',
+        message: {
+          supportSecondPrompt: 'no',
+        },
+      })
+    } else {
+      setIsInputDisabled(true)
+      dispatchMessage({
+        type: 'update',
+        message: {
+          supportSecondPrompt: undefined,
+        },
+      })
+      dispatchMessage({
+        type: 'new',
+        message: {
+          status: MessageStatus.Complete,
+          role: MessageRole.Assistant,
+          content: 'Great to hear I could help you resolve your issue!',
+        },
+      })
+    }
+  }
+
+  const handleSubmittedFeedback = (
+    submittedFeedback: 'Ask another question' | 'Please get me in touch with Supabase Support'
+  ) => {
+    dispatchMessage({
+      type: 'update',
+      message: {
+        supportFirstPrompt: false,
+      },
+    })
+
+    dispatchMessage({
+      type: 'update',
+      message: {
+        supportSecondPrompt: undefined,
+      },
+    })
+
+    if (submittedFeedback === 'Please get me in touch with Supabase Support') {
+      setIsInputDisabled(true)
+      dispatchMessage({
+        type: 'new',
+        message: {
+          status: MessageStatus.Complete,
+          role: MessageRole.Assistant,
+          content: 'Redirecting you to the support form. Please wait...',
+        },
+      })
+
+      const userFirstReply = messages.find(({ role }) => role === MessageRole.User)?.content || ''
+
+      setTimeout(() => {
+        const queryParams = projectRef
+          ? `?ref=${projectRef}&firstReply=${userFirstReply}`
+          : `?firstReply=${userFirstReply}`
+        window.open(`/dashboard/support/new${queryParams}`, '_blank')
+      }, 3000)
+    } else {
+      dispatchMessage({
+        type: 'new',
+        message: {
+          status: MessageStatus.Complete,
+          role: MessageRole.Assistant,
+          content: 'Kindly provide all the necessary details so I can assist you more effectively!',
+        },
+      })
+    }
+  }
 
   const submit = useCallback(
     async (query: string) => {
@@ -144,6 +231,7 @@ export function useAiChat({
           content: query,
         },
       })
+
       dispatchMessage({
         type: 'new',
         message: {
@@ -152,6 +240,7 @@ export function useAiChat({
           content: '',
         },
       })
+
       setIsResponding(false)
       setHasError(false)
       setIsLoading?.(true)
@@ -186,18 +275,16 @@ export function useAiChat({
             setIsResponding(false)
             dispatchMessage({
               type: 'update',
-              index: currentMessageIndex,
               message: {
+                supportFirstPrompt: true,
                 status: MessageStatus.Complete,
               },
             })
-            setCurrentMessageIndex((x) => x + 2)
             return
           }
 
           dispatchMessage({
             type: 'update',
-            index: currentMessageIndex,
             message: {
               status: MessageStatus.InProgress,
             },
@@ -215,7 +302,6 @@ export function useAiChat({
           if (content) {
             dispatchMessage({
               type: 'append-content',
-              index: currentMessageIndex,
               content,
             })
           }
@@ -230,7 +316,7 @@ export function useAiChat({
 
       setIsLoading?.(true)
     },
-    [currentMessageIndex, messages, messageTemplate]
+    [messages, messageTemplate]
   )
 
   function reset() {
@@ -249,6 +335,10 @@ export function useAiChat({
     messages,
     isResponding,
     hasError,
+    handleFeedback,
+    submittedFeedback,
+    handleSubmittedFeedback,
+    isInputDisabled,
   }
 }
 
@@ -317,9 +407,19 @@ export function queryAi(messages: Message[], timeout = 0) {
 }
 
 const AiCommand = () => {
-  const { isLoading, setIsLoading, search, setSearch } = useCommandMenu()
+  const { isLoading, setIsLoading, search, setSearch, aiVariant } = useCommandMenu()
 
-  const { submit, reset, messages, isResponding, hasError } = useAiChat({
+  const {
+    submit,
+    reset,
+    messages,
+    isResponding,
+    hasError,
+    handleFeedback,
+    submittedFeedback,
+    handleSubmittedFeedback,
+    isInputDisabled,
+  } = useAiChat({
     setIsLoading,
   })
 
@@ -354,6 +454,8 @@ const AiCommand = () => {
 
   // Detect an IME composition (so that we can ignore Enter keypress)
   const [isImeComposing, setIsImeComposing] = useState(false)
+
+  const questions = aiVariant === 'support' ? supportQuestions : defaultQuestions
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
@@ -412,20 +514,62 @@ const AiCommand = () => {
                         )}
                       </>
                     </div>
+
+                    {message.status === MessageStatus.Complete &&
+                      message.supportFirstPrompt === true &&
+                      aiVariant === 'support' && (
+                        <div className="flex items-center justify-center mt-4 space-x-2">
+                          <p className="prose dark:prose-dark">Was this answer helpful?</p>
+                          <Button size="tiny" type="default" onClick={() => handleFeedback('yes')}>
+                            Yes
+                          </Button>
+                          <Button size="tiny" type="default" onClick={() => handleFeedback('no')}>
+                            No
+                          </Button>
+                        </div>
+                      )}
+
+                    {message.status === MessageStatus.Complete &&
+                      message.supportFirstPrompt === false &&
+                      message.supportSecondPrompt !== undefined &&
+                      aiVariant === 'support' && (
+                        <div className="flex items-center justify-center mt-4 space-x-2">
+                          <p className="prose dark:prose-dark">I'm sorry to hear that.</p>
+                          <Button
+                            size="tiny"
+                            type="default"
+                            onClick={() => handleSubmittedFeedback('Ask another question')}
+                          >
+                            Ask another question
+                          </Button>
+                          <Button
+                            size="tiny"
+                            type="default"
+                            onClick={() =>
+                              handleSubmittedFeedback(
+                                'Contact Support'
+                              )
+                            }
+                          >
+                            Please get me in touch with Supabase Support
+                          </Button>
+                        </div>
+                      )}
                   </div>
                 )
             }
           })}
 
         {messages.length === 0 && !hasError && (
-          <CommandGroup heading="Examples">
+          <CommandGroup heading={aiVariant !== 'support' ? 'Examples' : 'Support AI Bot'}>
             {questions.map((question) => {
               const key = question.replace(/\s+/g, '_')
+
               return (
                 <CommandItem
                   type="command"
                   onSelect={() => {
-                    if (!search) {
+                    if (!search && question !== supportQuestions[0]) {
                       handleSubmit(question)
                     }
                   }}
@@ -463,6 +607,7 @@ const AiCommand = () => {
             isLoading || isResponding ? 'Waiting on an answer...' : 'Ask Supabase AI a question...'
           }
           value={search}
+          disabled={isInputDisabled}
           actions={
             <>
               {!isLoading && !isResponding ? (

@@ -82,8 +82,8 @@ const CommandMenu = () => {
 
   const commandListMaxHeight =
     currentPage === COMMAND_ROUTES.DOCS_SEARCH ||
-    currentPage === COMMAND_ROUTES.AI ||
-    currentPage === COMMAND_ROUTES.GENERATE_SQL
+        currentPage === COMMAND_ROUTES.AI ||
+        currentPage === COMMAND_ROUTES.GENERATE_SQL
       ? 'min(600px, 50vh)'
       : '300px'
 
