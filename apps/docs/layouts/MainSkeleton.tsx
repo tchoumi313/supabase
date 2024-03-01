@@ -1,11 +1,14 @@
 import { useTheme } from 'next-themes'
 import Image from 'next/legacy/image'
 import Link from 'next/link'
-import NavigationMenu, { type MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
-import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
-
 import { PropsWithChildren, memo, useEffect } from 'react'
-import Footer from '~/components/Navigation/Footer'
+import { ReactElement } from 'react-markdown/lib/react-markdown'
+
+import Footer from '~/features/Navigation/Footer'
+import NavigationMenu, { type MenuId } from '~/features/Navigation/NavigationMenu/NavigationMenu'
+import { type RefMenuCategory } from '~/features/Navigation/NavigationMenu/NavigationMenuRefListItems'
+import TopNavBar from '~/features/Navigation/NavigationMenu/TopNavBar'
+import { ActivePageProvider } from '~/features/Navigation/NavigationMenu/utils'
 import { menuState, useMenuMobileOpen } from '~/hooks/useMenuState'
 
 const levelsData = {
@@ -278,7 +281,13 @@ const Container = memo(function Container(props: PropsWithChildren) {
   )
 })
 
-const NavContainer = memo(function NavContainer({ menuId }: { menuId: MenuId }) {
+const NavContainer = memo(function NavContainer({
+  menuId,
+  menuData,
+}: {
+  menuId: MenuId
+  menuData?: Array<RefMenuCategory>
+}) {
   const mobileMenuOpen = useMenuMobileOpen()
 
   return (
@@ -337,17 +346,30 @@ const NavContainer = memo(function NavContainer({ menuId }: { menuId: MenuId }) 
             'lg:opacity-100 lg:visible',
           ].join(' ')}
         >
-          <NavigationMenu menuId={menuId} />
+          <NavigationMenu menuId={menuId} menuData={menuData} />
         </div>
       </div>
     </nav>
   )
 })
 
-function MainSkeleton({ children, menuId }: PropsWithChildren<{ menuId: MenuId }>) {
+type MainSkeletonProps = {
+  menuId: MenuId
+  menuData?: Array<RefMenuCategory>
+  ContainingElement?: (props: PropsWithChildren<{ className: string }>) => JSX.Element
+}
+
+function MainSkeleton({
+  children,
+  menuId,
+  menuData,
+  ContainingElement,
+}: PropsWithChildren<MainSkeletonProps>) {
+  const OuterContainer = ContainingElement ?? 'div'
+
   return (
-    <div className="flex flex-row h-full">
-      <NavContainer menuId={menuId} />
+    <OuterContainer className="flex flex-row h-full">
+      <NavContainer menuId={menuId} menuData={menuData} />
       <Container>
         <div className={['lg:sticky top-0 z-10 overflow-hidden'].join(' ')}>
           <TopNavBar />
@@ -369,8 +391,14 @@ function MainSkeleton({ children, menuId }: PropsWithChildren<{ menuId: MenuId }
         </div>
         <MobileMenuBackdrop />
       </Container>
-    </div>
+    </OuterContainer>
   )
 }
 
-export { MainSkeleton }
+function RefMainSkeleton(
+  props: PropsWithChildren<Omit<MainSkeletonProps, 'ContainingElement'> & { className?: string }>
+) {
+  return <MainSkeleton {...props} ContainingElement={ActivePageProvider} />
+}
+
+export { MainSkeleton, RefMainSkeleton }

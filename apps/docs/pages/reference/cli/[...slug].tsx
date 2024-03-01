@@ -1,31 +1,42 @@
+import type { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next'
+
 import { MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
 import RefSectionHandler from '~/components/reference/RefSectionHandler'
 import { flattenSections } from '~/lib/helpers'
-import handleRefGetStaticPaths from '~/lib/mdx/handleRefStaticPaths'
-import handleRefStaticProps from '~/lib/mdx/handleRefStaticProps'
-
+import { getGenericRefStaticPaths, getGenericRefStaticProps } from '~/lib/mdx/refUtils.server'
 import spec from '~/spec/cli_v1_commands.yaml' assert { type: 'yml' }
 import cliCommonSections from '~/spec/common-cli-sections.json' assert { type: 'json' }
 
-const sections = flattenSections(cliCommonSections)
+const flatSections = flattenSections(cliCommonSections)
 const libraryPath = '/cli'
 
-export default function CliRef(props) {
+const CliRef = (props: InferGetStaticPropsType<typeof getStaticProps>) => {
   return (
     <RefSectionHandler
       menuId={MenuId.RefCli}
-      sections={sections}
+      menuData={props.menuData}
+      sections={props.flatSections}
+      docs={props.docs}
       spec={spec}
-      pageProps={props}
       type="cli"
     />
   )
 }
 
-export async function getStaticProps() {
-  return handleRefStaticProps(sections, libraryPath)
-}
+const getStaticProps = (() => {
+  const includeList = { tag: 'command', list: spec.commands.map((command: any) => command.id) }
 
-export async function getStaticPaths() {
-  return handleRefGetStaticPaths(sections)
-}
+  return getGenericRefStaticProps({
+    sections: cliCommonSections,
+    flatSections,
+    libraryPath,
+    includeList,
+  })
+}) satisfies GetStaticProps
+
+const getStaticPaths = (() => {
+  return getGenericRefStaticPaths({ flatSections })
+}) satisfies GetStaticPaths
+
+export default CliRef
+export { getStaticPaths, getStaticProps }

@@ -1,30 +1,39 @@
-import clientLibsCommonSections from '~/spec/common-client-libs-sections.json'
-import spec from '~/spec/supabase_csharp_v0.yml' assert { type: 'yml' }
-import RefSectionHandler from '~/components/reference/RefSectionHandler'
-import { flattenSections } from '~/lib/helpers'
-import handleRefGetStaticPaths from '~/lib/mdx/handleRefStaticPaths'
-import handleRefStaticProps from '~/lib/mdx/handleRefStaticProps'
-import { MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
+import { type InferGetStaticPropsType, type GetStaticPaths, type GetStaticProps } from 'next'
 
-const sections = flattenSections(clientLibsCommonSections)
+import RefSectionHandler from '~/components/reference/RefSectionHandler'
+import type { ICommonSection } from '~/components/reference/Reference.types'
+import flatSections from '~/features/Reference/navigation/generated/commonClientLibFlat.json' assert { type: 'json' }
+import menuData from '~/features/Reference/navigation/generated/reference_csharp_v0.json' assert { type: 'json' }
+import { MenuId } from '~/features/Navigation/NavigationMenu/menus'
+import { RefMainSkeleton } from '~/layouts/MainSkeleton'
+import spec from '~/spec/supabase_csharp_v0.yml' assert { type: 'yml' }
+import { getGenericRefStaticPaths, getGenericRefStaticProps } from '~/lib/mdx/refUtils.server'
+
 const libraryPath = '/csharp'
 
-export default function CSharpReference(props) {
+const CSharpReferencePage = (props: InferGetStaticPropsType<typeof getStaticProps>) => {
   return (
-    <RefSectionHandler
-      menuId={MenuId.RefCSharpV0}
-      sections={sections}
-      spec={spec}
-      pageProps={props}
-      type="client-lib"
-    />
+    <RefMainSkeleton menuId={MenuId.RefCSharpV0} menuData={menuData}>
+      <RefSectionHandler
+        sections={flatSections as Array<ICommonSection>}
+        docs={props.docs}
+        spec={spec}
+        type="client-lib"
+      />
+    </RefMainSkeleton>
   )
 }
 
-export async function getStaticProps() {
-  return handleRefStaticProps(sections, libraryPath)
-}
+const getStaticProps = (async () => {
+  return getGenericRefStaticProps({
+    flatSections: flatSections as Array<ICommonSection>,
+    libraryPath,
+  })
+}) satisfies GetStaticProps
 
-export async function getStaticPaths() {
-  return handleRefGetStaticPaths(sections)
-}
+const getStaticPaths = (async () => {
+  return getGenericRefStaticPaths({ flatSections: flatSections as Array<ICommonSection> })
+}) satisfies GetStaticPaths
+
+export default CSharpReferencePage
+export { getStaticProps, getStaticPaths }

@@ -1,30 +1,39 @@
-import clientLibsCommonSections from '~/spec/common-client-libs-sections.json'
-import spec from '~/spec/supabase_swift_v2.yml' assert { type: 'yml' }
-import RefSectionHandler from '~/components/reference/RefSectionHandler'
-import { flattenSections } from '~/lib/helpers'
-import handleRefGetStaticPaths from '~/lib/mdx/handleRefStaticPaths'
-import handleRefStaticProps from '~/lib/mdx/handleRefStaticProps'
+import { type InferGetStaticPropsType, type GetStaticPaths, type GetStaticProps } from 'next'
+
 import { MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
+import RefSectionHandler from '~/components/reference/RefSectionHandler'
+import {
+  getClientRefStaticPaths,
+  getClientRefStaticProps,
+} from '~/lib/mdx/refUtils.clientLibrary.server'
+import spec from '~/spec/supabase_swift_v1.yml' assert { type: 'yml' }
 
-const sections = flattenSections(clientLibsCommonSections)
-const libraryPath = '/swift/v2'
+const libraryPath = '/swift/v1'
 
-export default function SwiftReference(props) {
+const SwiftReferencePage = (props: InferGetStaticPropsType<typeof getStaticProps>) => {
   return (
     <RefSectionHandler
       menuId={MenuId.RefSwiftV1}
-      sections={sections}
+      menuData={props.menuData}
+      sections={props.flatSections}
+      docs={props.docs}
       spec={spec}
-      pageProps={props}
       type="client-lib"
     />
   )
 }
 
-export async function getStaticProps() {
-  return handleRefStaticProps(sections, libraryPath)
-}
+const getStaticProps = (async () => {
+  return getClientRefStaticProps({
+    spec,
+    libraryPath,
+    excludedName: 'reference_swift_v1',
+  })
+}) satisfies GetStaticProps
 
-export async function getStaticPaths() {
-  return handleRefGetStaticPaths(sections)
-}
+const getStaticPaths = (async () => {
+  return getClientRefStaticPaths()
+}) satisfies GetStaticPaths
+
+export default SwiftReferencePage
+export { getStaticProps, getStaticPaths }
