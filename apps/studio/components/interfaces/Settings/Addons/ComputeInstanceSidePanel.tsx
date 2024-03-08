@@ -22,14 +22,14 @@ import {
 } from 'ui'
 
 import { useProjectContext } from 'components/layouts/ProjectLayout/ProjectContext'
-import { WarningIcon } from 'components/ui/Icons'
+import { WarningIcon } from 'ui-patterns/Icons/StatusIcons'
 import { setProjectStatus } from 'data/projects/projects-query'
 import { useReadReplicasQuery } from 'data/read-replicas/replicas-query'
 import { useOrgSubscriptionQuery } from 'data/subscriptions/org-subscription-query'
 import { useProjectAddonRemoveMutation } from 'data/subscriptions/project-addon-remove-mutation'
 import { useProjectAddonUpdateMutation } from 'data/subscriptions/project-addon-update-mutation'
 import { useProjectAddonsQuery } from 'data/subscriptions/project-addons-query'
-import { AddonVariantId, ProjectAddonVariantMeta } from 'data/subscriptions/types'
+import type { AddonVariantId, ProjectAddonVariantMeta } from 'data/subscriptions/types'
 import { useCheckPermissions, useFlag, useSelectedOrganization, useStore } from 'hooks'
 import { getCloudProviderArchitecture } from 'lib/cloudprovider-utils'
 import { INSTANCE_MICRO_SPECS, PROJECT_STATUS } from 'lib/constants'
@@ -399,7 +399,7 @@ const ComputeInstanceSidePanel = () => {
               <Alert_Shadcn_>
                 <WarningIcon />
                 <AlertTitle_Shadcn_>
-                  Your project will need to be restarted when changing it's compute size
+                  Your project will need to be restarted when changing its compute size
                 </AlertTitle_Shadcn_>
                 <AlertDescription_Shadcn_>
                   Your project will be unavailable for up to 2 minutes while the changes take place.
@@ -485,7 +485,7 @@ const ComputeInstanceSidePanel = () => {
             <Alert
               withIcon
               variant="warning"
-              title="Your project will need to be restarted when changing it's compute size"
+              title="Your project will need to be restarted when changing its compute size"
             >
               Your project will be unavailable for up to 2 minutes while the changes take place.
             </Alert>

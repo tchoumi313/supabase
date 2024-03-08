@@ -7,8 +7,8 @@ import { useInView } from 'react-intersection-observer'
 
 import ShimmeringLoader from 'components/ui/ShimmeringLoader'
 import { useBranchQuery } from 'data/branches/branch-query'
-import { Branch } from 'data/branches/branches-query'
-import { GitHubPullRequest } from 'data/integrations/integrations-github-pull-requests-query'
+import type { Branch } from 'data/branches/branches-query'
+import type { GitHubPullRequest } from 'data/integrations/github-pull-requests-query'
 import {
   Badge,
   Button,
@@ -103,7 +103,7 @@ export const BranchRow = ({
   const { data } = useBranchQuery(
     { projectRef, id: branch.id },
     {
-      enabled: inView,
+      enabled: branch.status === 'CREATING_PROJECT' && inView,
       refetchInterval(data) {
         if (data?.status !== 'ACTIVE_HEALTHY') {
           return 1000 * 3 // 3 seconds
@@ -128,7 +128,11 @@ export const BranchRow = ({
           </Link>
         </Button>
         {isActive && <Badge color="slate">Current</Badge>}
-        {data?.status !== undefined && <BranchStatusBadge status={data.status} />}
+        <BranchStatusBadge
+          status={
+            branch.status === 'CREATING_PROJECT' ? data?.status ?? branch.status : branch.status
+          }
+        />
         <p className="text-xs text-foreground-lighter">
           {daysFromNow > 1 ? `Updated on ${formattedUpdatedAt}` : `Updated ${formattedTimeFromNow}`}
         </p>
