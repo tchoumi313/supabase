@@ -1,11 +1,12 @@
 import { useTheme } from 'next-themes'
 import Image from 'next/legacy/image'
 import Link from 'next/link'
-import NavigationMenu, { type MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
-import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
+import { type PropsWithChildren, memo, useEffect } from 'react'
 
-import { PropsWithChildren, memo, useEffect } from 'react'
 import Footer from '~/components/Navigation/Footer'
+import NavigationMenu from '~/components/Navigation/NavigationMenu/NavigationMenu'
+import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
+import { useNavMenu } from '~/components/Navigation/NavigationMenu/NavigationMenuContext'
 import { menuState, useMenuMobileOpen } from '~/hooks/useMenuState'
 
 const levelsData = {
@@ -143,8 +144,9 @@ const levelsData = {
   },
 }
 
-const MobileHeader = memo(function MobileHeader({ menuId }: { menuId: MenuId }) {
+const MobileHeader = memo(function MobileHeader() {
   const mobileMenuOpen = useMenuMobileOpen()
+  const { menuId } = useNavMenu()
   const menuLevel = menuId
 
   return (
@@ -278,7 +280,7 @@ const Container = memo(function Container(props: PropsWithChildren) {
   )
 })
 
-const NavContainer = memo(function NavContainer({ menuId }: { menuId: MenuId }) {
+const NavContainer = memo(function NavContainer() {
   const mobileMenuOpen = useMenuMobileOpen()
 
   return (
@@ -337,17 +339,17 @@ const NavContainer = memo(function NavContainer({ menuId }: { menuId: MenuId }) 
             'lg:opacity-100 lg:visible',
           ].join(' ')}
         >
-          <NavigationMenu menuId={menuId} />
+          <NavigationMenu />
         </div>
       </div>
     </nav>
   )
 })
 
-function MainSkeleton({ children, menuId }: PropsWithChildren<{ menuId: MenuId }>) {
+function MainSkeleton({ children }: PropsWithChildren) {
   return (
     <div className="flex flex-row h-full">
-      <NavContainer menuId={menuId} />
+      <NavContainer />
       <Container>
         <div className={['lg:sticky top-0 z-10 overflow-hidden'].join(' ')}>
           <TopNavBar />
@@ -360,7 +362,7 @@ function MainSkeleton({ children, menuId }: PropsWithChildren<{ menuId: MenuId }
           ].join(' ')}
         >
           <div className={['lg:hidden', 'px-5 ', 'border-b z-10'].join(' ')}>
-            <MobileHeader menuId={menuId} />
+            <MobileHeader />
           </div>
         </div>
         <div className="grow">
