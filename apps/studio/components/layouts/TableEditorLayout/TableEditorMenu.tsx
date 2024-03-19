@@ -1,13 +1,14 @@
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
+import { LOCAL_STORAGE_KEYS } from 'lib/constants'
 import { ProtectedSchemaModal } from 'components/interfaces/Database/ProtectedSchemaWarning'
 import AlertError from 'components/ui/AlertError'
 import InfiniteList from 'components/ui/InfiniteList'
 import SchemaSelector from 'components/ui/SchemaSelector'
 import { useSchemasQuery } from 'data/database/schemas-query'
 import { useEntityTypesQuery } from 'data/entity-types/entity-types-infinite-query'
-import { useCheckPermissions, useLocalStorage } from 'hooks'
+import { useCheckPermissions, useLocalStorage, useLocalStorageQuery } from 'hooks'
 import { EXCLUDED_SCHEMAS } from 'lib/constants/schemas'
 import { partition } from 'lodash'
 import { Plus } from 'lucide-react'
@@ -38,6 +39,11 @@ const TableEditorMenu = () => {
     'alphabetical'
   )
 
+  const [selectedSchema, setSelectedSchema] = useLocalStorageQuery(
+    LOCAL_STORAGE_KEYS.TABLE_EDITOR_SELECTED_SCHEMA,
+    'public'
+  )
+
   const { project } = useProjectContext()
   const {
     data,
@@ -53,7 +59,7 @@ const TableEditorMenu = () => {
     {
       projectRef: project?.ref,
       connectionString: project?.connectionString,
-      schema: snap.selectedSchemaName,
+      schema: selectedSchema,
       search: searchText || undefined,
       sort,
     },
@@ -72,7 +78,7 @@ const TableEditorMenu = () => {
     connectionString: project?.connectionString,
   })
 
-  const schema = schemas?.find((schema) => schema.name === snap.selectedSchemaName)
+  const schema = schemas?.find((schema) => schema.name === selectedSchema)
   const canCreateTables = useCheckPermissions(PermissionAction.TENANT_SQL_ADMIN_WRITE, 'tables')
 
   const refreshTables = async () => {
@@ -95,9 +101,10 @@ const TableEditorMenu = () => {
         <div className="flex flex-col gap-1">
           <SchemaSelector
             className="mx-4 h-7"
-            selectedSchemaName={snap.selectedSchemaName}
+            selectedSchemaName={selectedSchema}
             onSelectSchema={(name: string) => {
               setSearchText('')
+              setSelectedSchema(name)
               snap.setSelectedSchemaName(name)
               router.push(`/project/${project?.ref}/editor`)
             }}
