@@ -25,8 +25,6 @@ import { ProjectStorageConfigResponse } from 'data/config/project-storage-config
 import { getQueryClient } from 'data/query-client'
 import { deleteBucketObject } from 'data/storage/bucket-object-delete-mutation'
 import { downloadBucketObject } from 'data/storage/bucket-object-download-mutation'
-import { getPublicUrlForBucketObject } from 'data/storage/bucket-object-get-public-url-mutation'
-import { signBucketObject } from 'data/storage/bucket-object-sign-mutation'
 import { StorageObject, listBucketObjects } from 'data/storage/bucket-objects-list-mutation'
 import { Bucket } from 'data/storage/buckets-query'
 import { moveStorageObject } from 'data/storage/object-move-mutation'
@@ -55,7 +53,7 @@ const EMPTY_FOLDER_PLACEHOLDER_FILE_NAME = '.emptyFolderPlaceholder'
 const STORAGE_PROGRESS_INFO_TEXT = "Please do not close the browser until it's completed"
 
 class StorageExplorerStore {
-  private projectRef: string = ''
+  projectRef: string = ''
   view: STORAGE_VIEWS = STORAGE_VIEWS.COLUMNS
   sortBy: STORAGE_SORT_BY = STORAGE_SORT_BY.NAME
   sortByOrder: STORAGE_SORT_BY_ORDER = STORAGE_SORT_BY_ORDER.ASC
@@ -66,7 +64,7 @@ class StorageExplorerStore {
   selectedItems: StorageItemWithColumn[] = []
   selectedItemsToDelete: StorageItemWithColumn[] = []
   selectedItemsToMove: StorageItemWithColumn[] = []
-  selectedFilePreview: (StorageItemWithColumn & { previewUrl: string | undefined }) | null = null
+  selectedFilePreview: StorageItemWithColumn | null = null
   selectedFileCustomExpiry: StorageItem | undefined = undefined
 
   private DEFAULT_OPTIONS = {
@@ -81,9 +79,6 @@ class StorageExplorerStore {
     'public',
     any
   >
-
-  /* FE Cacheing for file previews */
-  private filePreviewCache: CachedFile[] = []
 
   /* For file uploads, from 0 to 1 */
   private uploadProgress: number = 0
@@ -137,19 +132,6 @@ class StorageExplorerStore {
     )
   }
 
-  private updateFileInPreviewCache = (fileCache: CachedFile) => {
-    const updatedFilePreviewCache = this.filePreviewCache.map((file) => {
-      if (file.id === fileCache.id) return fileCache
-      return file
-    })
-    this.filePreviewCache = updatedFilePreviewCache
-  }
-
-  private addFileToPreviewCache = (fileCache: CachedFile) => {
-    const updatedFilePreviewCache = this.filePreviewCache.concat([fileCache])
-    this.filePreviewCache = updatedFilePreviewCache
-  }
-
   private getLocalStorageKey = () => {
     return `supabase-storage-${this.projectRef}`
   }
@@ -159,7 +141,7 @@ class StorageExplorerStore {
   }
 
   // Probably refactor this to ignore bucket by default
-  private getPathAlongOpenedFolders = (includeBucket = true) => {
+  getPathAlongOpenedFolders = (includeBucket = true) => {
     if (includeBucket) {
       return this.openedFolders.length > 0
         ? `${this.selectedBucket.name}/${this.openedFolders.map((folder) => folder.name).join('/')}`
@@ -322,80 +304,11 @@ class StorageExplorerStore {
   }
 
   setFilePreview = async (file: StorageItemWithColumn) => {
-    const size = file.metadata?.size
-    const mimeType = file.metadata?.mimetype
-
-    if (mimeType && size) {
-      // Skip fetching of file preview if file is too big
-      if (size > PREVIEW_SIZE_LIMIT) {
-        this.selectedFilePreview = { ...file, previewUrl: 'skipped' }
-        return
-      }
-
-      // Either retrieve file preview from FE cache or retrieve signed url
-      this.selectedFilePreview = { ...file, previewUrl: 'loading' }
-      const cachedPreview = this.filePreviewCache.find((cache) => cache.id === file.id)
-
-      const fetchedAt = cachedPreview?.fetchedAt ?? null
-      const expiresIn = cachedPreview?.expiresIn ?? null
-      const existsInCache = fetchedAt !== null && expiresIn !== null
-      const isExpired = existsInCache ? fetchedAt + expiresIn * 1000 < Date.now() : true
-
-      if (!isExpired) {
-        this.selectedFilePreview = { ...file, previewUrl: cachedPreview?.url }
-      } else {
-        const previewUrl = await this.fetchFilePreview(file.name)
-        const formattedPreviewUrl = this.selectedBucket.public
-          ? `${previewUrl}?t=${new Date().toISOString()}`
-          : previewUrl
-        this.selectedFilePreview = { ...file, previewUrl: formattedPreviewUrl }
-
-        const fileCache: CachedFile = {
-          id: file.id as string,
-          url: previewUrl,
-          expiresIn: DEFAULT_EXPIRY,
-          fetchedAt: Date.now(),
-        }
-        if (!existsInCache) {
-          this.addFileToPreviewCache(fileCache)
-        } else {
-          this.updateFileInPreviewCache(fileCache)
-        }
-      }
-    } else {
-      this.selectedFilePreview = { ...file, previewUrl: undefined }
-    }
+    this.selectedFilePreview = file
   }
 
   closeFilePreview = () => {
     this.selectedFilePreview = null
-  }
-
-  getFileUrl = async (file: StorageItem, expiresIn = 0) => {
-    const filePreview = this.filePreviewCache.find((cache) => cache.id === file.id)
-    if (filePreview !== undefined && expiresIn === 0) {
-      return filePreview.url
-    } else {
-      const signedUrl = await this.fetchFilePreview(file.name, expiresIn)
-      try {
-        const formattedUrl = new URL(signedUrl!)
-        formattedUrl.searchParams.set('t', new Date().toISOString())
-        const fileUrl = formattedUrl.toString()
-
-        // Also save it to cache
-        const fileCache: CachedFile = {
-          id: file.id as string,
-          url: fileUrl,
-          expiresIn: DEFAULT_EXPIRY,
-          fetchedAt: Date.now(),
-        }
-        this.addFileToPreviewCache(fileCache)
-        return fileUrl
-      } catch (error) {
-        console.error('Failed to get file URL', error)
-        return ''
-      }
-    }
   }
 
   /* Methods that involve the storage client library */
@@ -736,47 +649,9 @@ class StorageExplorerStore {
 
     dismiss()
 
-    // Clear file preview cache if moved files exist in cache
-    const idsOfItemsToMove = this.selectedItemsToMove.map((item) => item.id)
-    const updatedFilePreviewCache = this.filePreviewCache.filter(
-      (file) => !idsOfItemsToMove.includes(file.id)
-    )
-    this.filePreviewCache = updatedFilePreviewCache
-
+    // TODO: invalidate the file preview cache when moving files
     await this.refetchAllOpenedFolders()
     this.clearSelectedItemsToMove()
-  }
-
-  private fetchFilePreview = async (fileName: string, expiresIn: number = 0) => {
-    const includeBucket = false
-    const pathToFile = this.getPathAlongOpenedFolders(includeBucket)
-    const formattedPathToFile = pathToFile.length > 0 ? `${pathToFile}/${fileName}` : fileName
-
-    if (this.selectedBucket.public) {
-      try {
-        const data = await getPublicUrlForBucketObject({
-          projectRef: this.projectRef,
-          bucketId: this.selectedBucket.id,
-          path: formattedPathToFile,
-        })
-        return data.publicUrl
-      } catch (error: any) {
-        toast.error(`Failed to fetch public file preview: ${error.message}`)
-      }
-    } else {
-      try {
-        const data = await signBucketObject({
-          projectRef: this.projectRef,
-          bucketId: this.selectedBucket.id,
-          path: formattedPathToFile,
-          expiresIn: expiresIn || DEFAULT_EXPIRY,
-        })
-        return data.signedUrl
-      } catch (error: any) {
-        toast.error(`Failed to fetch signed url preview: ${error.message}`)
-      }
-    }
-    return ''
   }
 
   // the method accepts either files with column index or with prefix.
@@ -834,13 +709,6 @@ class StorageExplorerStore {
         { id: toastId }
       )
     }, Promise.resolve())
-
-    // Clear file preview cache if deleted files exist in cache
-    const idsOfFilesDeleted = files.map((file) => file.id)
-    const updatedFilePreviewCache = this.filePreviewCache.filter(
-      (file) => !idsOfFilesDeleted.includes(file.id)
-    )
-    this.filePreviewCache = updatedFilePreviewCache
 
     if (!isDeleteFolder) {
       // If parent folders are empty, reinstate .emptyFolderPlaceholder to persist them
@@ -1092,11 +960,7 @@ class StorageExplorerStore {
 
         toast.success(`Successfully renamed "${originalName}" to "${newName}"`)
 
-        // Clear file preview cache if the renamed file exists in the cache
-        const updatedFilePreviewCache = this.filePreviewCache.filter(
-          (fileCache) => fileCache.id !== file.id
-        )
-        this.filePreviewCache = updatedFilePreviewCache
+        // TODO: Should we invalidate the file preview cache when renaming files?
 
         if (this.selectedFilePreview?.name === originalName) {
           const { previewUrl, ...fileData } = file as any
@@ -1419,12 +1283,7 @@ class StorageExplorerStore {
       }
       await this.refetchAllOpenedFolders()
 
-      // Clear file preview cache if the moved file exists in the cache
-      const fileIds = files.map((file) => file.id)
-      const updatedFilePreviewCache = this.filePreviewCache.filter(
-        (fileCache) => !fileIds.includes(fileCache.id)
-      )
-      this.filePreviewCache = updatedFilePreviewCache
+      // TODO: Should we invalidate the file preview cache when renaming folders?
     } catch (e) {
       toast.error(`Failed to rename folder to ${newName}`, { id: toastId })
     }

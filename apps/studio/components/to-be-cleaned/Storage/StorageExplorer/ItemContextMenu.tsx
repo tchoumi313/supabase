@@ -6,9 +6,11 @@ import 'react-contexify/dist/ReactContexify.css'
 
 import { useCheckPermissions } from 'hooks'
 import { useStorageStore } from 'localStores/storageExplorer/StorageExplorerStore'
+import { useCallback } from 'react'
 import { IconChevronRight, IconClipboard, IconDownload, IconEdit, IconMove, IconTrash2 } from 'ui'
 import { URL_EXPIRY_DURATION } from '../Storage.constants'
 import { StorageItemWithColumn } from '../Storage.types'
+import { fetchFileUrl } from './useFetchFileUrlQuery'
 
 interface ItemContextMenuProps {
   id: string
@@ -18,7 +20,8 @@ interface ItemContextMenuProps {
 const ItemContextMenu = ({ id = '', onCopyUrl = noop }: ItemContextMenuProps) => {
   const storageExplorerStore = useStorageStore()
   const {
-    getFileUrl,
+    projectRef,
+    getPathAlongOpenedFolders,
     downloadFile,
     selectedBucket,
     setSelectedItemsToDelete,
@@ -29,12 +32,29 @@ const ItemContextMenu = ({ id = '', onCopyUrl = noop }: ItemContextMenuProps) =>
   const isPublic = selectedBucket.public
   const canUpdateFiles = useCheckPermissions(PermissionAction.STORAGE_ADMIN_WRITE, '*')
 
+  // this doesn't work if you try to get a link to a file in a parent folder while a child folder is opened
+  const getFileUrl = useCallback(
+    (fileName: string, expiresIn?: URL_EXPIRY_DURATION) => {
+      const pathToFile = getPathAlongOpenedFolders(false)
+      const formattedPathToFile = [pathToFile, fileName].join('/')
+
+      return fetchFileUrl(
+        formattedPathToFile,
+        projectRef,
+        selectedBucket.id,
+        selectedBucket.public,
+        expiresIn
+      )
+    },
+    [projectRef, selectedBucket.id, selectedBucket.public]
+  )
+
   const onHandleClick = async (event: any, item: StorageItemWithColumn, expiresIn?: number) => {
     if (item.isCorrupted) return
     switch (event) {
       case 'copy':
         if (expiresIn !== undefined && expiresIn < 0) return setSelectedFileCustomExpiry(item)
-        else return onCopyUrl(item.name, await getFileUrl(item, expiresIn))
+        else return onCopyUrl(item.name, await getFileUrl(item.name, expiresIn))
       case 'rename':
         return setSelectedItemToRename(item)
       case 'move':

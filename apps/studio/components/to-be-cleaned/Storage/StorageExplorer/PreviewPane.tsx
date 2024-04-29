@@ -22,27 +22,47 @@ import {
 
 import { useCheckPermissions } from 'hooks'
 import { useStorageStore } from 'localStores/storageExplorer/StorageExplorerStore'
+import { useCallback } from 'react'
 import { URL_EXPIRY_DURATION } from '../Storage.constants'
+import { StorageItem } from '../Storage.types'
+import { fetchFileUrl, useFetchFileUrlQuery } from './useFetchFileUrlQuery'
 
-const PreviewFile = ({ mimeType, previewUrl }: { mimeType?: string; previewUrl?: string }) => {
-  if (!mimeType || !previewUrl) {
-    return (
-      <SVG
-        src={`${BASE_PATH}/img/file-filled.svg`}
-        preProcessor={(code) =>
-          code.replace(/svg/, 'svg class="mx-auto w-32 h-32 text-color-inherit opacity-75"')
-        }
-      />
-    )
+const PREVIEW_SIZE_LIMIT = 10000000 // 10MB
+
+const PreviewFile = ({ item }: { item: StorageItem }) => {
+  const storageExplorerStore = useStorageStore()
+  const { projectRef, selectedBucket } = storageExplorerStore
+
+  const {
+    data: previewUrl,
+    isLoading,
+    isSuccess,
+  } = useFetchFileUrlQuery({
+    file: item,
+    projectRef: projectRef,
+    bucket: selectedBucket,
+  })
+
+  const size = item.metadata?.size
+  const mimeType = item.metadata?.mimetype
+
+  const isSkipped = !!mimeType && !!size && size < PREVIEW_SIZE_LIMIT
+
+  let status = 'ready'
+  if (isLoading) {
+    status = 'loading'
+  } else if (isSuccess) {
+    status = 'ready'
   }
-  if (previewUrl === 'loading') {
+
+  if (status === 'loading') {
     return (
       <div className="flex h-full w-full items-center justify-center text-foreground-lighter">
         <IconLoader size={14} strokeWidth={2} className="animate-spin" />
       </div>
     )
   }
-  if (previewUrl === 'skipped') {
+  if (status === 'skipped') {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center">
         <SVG
@@ -57,6 +77,17 @@ const PreviewFile = ({ mimeType, previewUrl }: { mimeType?: string; previewUrl?:
       </div>
     )
   }
+  if (!mimeType || !previewUrl) {
+    return (
+      <SVG
+        src={`${BASE_PATH}/img/file-filled.svg`}
+        preProcessor={(code) =>
+          code.replace(/svg/, 'svg class="mx-auto w-32 h-32 text-color-inherit opacity-75"')
+        }
+      />
+    )
+  }
+
   if (mimeType.includes('image')) {
     return (
       <div
@@ -106,16 +137,33 @@ export interface PreviewPaneProps {
 const PreviewPane = ({ onCopyUrl }: PreviewPaneProps) => {
   const storageExplorerStore = useStorageStore()
   const {
-    getFileUrl,
+    projectRef,
     downloadFile,
     selectedBucket,
     selectedFilePreview: file,
     closeFilePreview,
     setSelectedItemsToDelete,
     setSelectedFileCustomExpiry,
+    getPathAlongOpenedFolders,
   } = storageExplorerStore
 
   const canUpdateFiles = useCheckPermissions(PermissionAction.STORAGE_ADMIN_WRITE, '*')
+
+  const getFileUrl = useCallback(
+    (expiresIn?: URL_EXPIRY_DURATION) => {
+      const pathToFile = getPathAlongOpenedFolders(false)
+      const formattedPathToFile = [pathToFile, file?.name].join('/')
+
+      return fetchFileUrl(
+        formattedPathToFile,
+        projectRef,
+        selectedBucket.id,
+        selectedBucket.public,
+        expiresIn
+      )
+    },
+    [file?.name, projectRef, selectedBucket.id, selectedBucket.public]
+  )
 
   if (!file) {
     return <></>
@@ -158,7 +206,7 @@ const PreviewPane = ({ onCopyUrl }: PreviewPaneProps) => {
           {/* Preview Thumbnail*/}
           <div className="my-4 border border-overlay">
             <div className="flex h-56 w-full items-center 2xl:h-72">
-              <PreviewFile mimeType={mimeType} previewUrl={file.previewUrl} />
+              <PreviewFile item={file} />
             </div>
           </div>
 
@@ -208,7 +256,7 @@ const PreviewPane = ({ onCopyUrl }: PreviewPaneProps) => {
                 <Button
                   type="outline"
                   icon={<IconClipboard size={16} strokeWidth={2} />}
-                  onClick={async () => onCopyUrl(file.name, await getFileUrl(file))}
+                  onClick={async () => onCopyUrl(file.name, await getFileUrl())}
                   disabled={file.isCorrupted}
                 >
                   Get URL
@@ -229,7 +277,7 @@ const PreviewPane = ({ onCopyUrl }: PreviewPaneProps) => {
                     <DropdownMenuItem
                       key="expires-one-week"
                       onClick={async () =>
-                        onCopyUrl(file.name, await getFileUrl(file, URL_EXPIRY_DURATION.WEEK))
+                        onCopyUrl(file.name, await getFileUrl(URL_EXPIRY_DURATION.WEEK))
                       }
                     >
                       Expire in 1 week
@@ -237,7 +285,7 @@ const PreviewPane = ({ onCopyUrl }: PreviewPaneProps) => {
                     <DropdownMenuItem
                       key="expires-one-month"
                       onClick={async () =>
-                        onCopyUrl(file.name, await getFileUrl(file, URL_EXPIRY_DURATION.MONTH))
+                        onCopyUrl(file.name, await getFileUrl(URL_EXPIRY_DURATION.MONTH))
                       }
                     >
                       Expire in 1 month
@@ -245,7 +293,7 @@ const PreviewPane = ({ onCopyUrl }: PreviewPaneProps) => {
                     <DropdownMenuItem
                       key="expires-one-year"
                       onClick={async () =>
-                        onCopyUrl(file.name, await getFileUrl(file, URL_EXPIRY_DURATION.YEAR))
+                        onCopyUrl(file.name, await getFileUrl(URL_EXPIRY_DURATION.YEAR))
                       }
                     >
                       Expire in 1 year

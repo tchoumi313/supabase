@@ -223,7 +223,6 @@ const StorageExplorer = ({ bucket }: StorageExplorerProps) => {
           columns={columns}
           openedFolders={openedFolders}
           selectedItems={selectedItems}
-          selectedFilePreview={selectedFilePreview}
           itemSearchString={itemSearchString}
           onFilesUpload={onFilesUpload}
           onSelectAllItemsInColumn={onSelectAllItemsInColumn}
