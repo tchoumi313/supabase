@@ -1,21 +1,20 @@
 ---
 id: 'auth-kakao'
 title: 'Login with Kakao'
-description: 'Add Kakao OAuth to your Supabase project'
+description: 'Use Sign in with Kakao on the web and native apps'
 ---
 
-To enable Kakao Auth for your project, you need to set up an Kakao OAuth application and add the application credentials to your Supabase Dashboard.
+Supabase Auth supports Sign in with Kakao on the web, native Android or iOS apps.
 
 ## Overview
 
-Kakao OAuth consists of six broad steps:
+To support Sign in with Kakao you need to configure the [Kakao provider in the Supabase dashboard](https://supabase.com/dashboard/project/_/auth/providers) for your project.
+There are two general ways to use Sign in with Kakao, depending on the application you're building:
 
-- Create and configure your app in the [Kakao Developer Portal](https://developers.kakao.com).
-- Obtaining a `REST API key` - this will serve as the `client_id`.
-- Generating the `Client secret code` - this will serve as the `client_secret`.
-- Additional configurations on Kakao Developers Portal.
-- Add your `client id` and `client secret` keys to your [Supabase Project](https://supabase.com/dashboard).
-- Add the login code to your [Supabase JS Client App](https://github.com/supabase/supabase-js).
+- Sign in on the web, in web-based apps, or even in native apps(this will open a web browser).
+  - Using an OAuth flow initiated by Supabase Auth using [Kakao Login - REST API](https://developers.kakao.com/docs/latest/en/kakaologin/rest-api).
+- Sign in native Android or iOS apps.
+  - Using an OpenID Connect. You need to pass the `id_token` from Kakao to `supabase.auth.signInWithIdToken()`.
 
 ## Access your Kakao Developer account
 
@@ -29,31 +28,10 @@ Kakao OAuth consists of six broad steps:
 - Go to `My Application`.
 - Click on `Add an application` at the top.
 - Fill out your app information:
-  - App icon.
-  - App name.
-  - Company name.
+- App icon.
+- App name.
+- Company name.
 - Click `Save` at the bottom right.
-
-## Obtain a REST API key
-
-This will serve as the `client_id` when you make API calls to authenticate the user.
-
-- Go to `My Application`.
-- Click on your app.
-- You will be redirected to `Summary` tab of your app.
-- In the `App Keys` section you will see `REST API key` -- this ID will become your `client_id` later.
-
-## Find your callback URL
-
-<SocialProviderSetup provider="Kakao" />- To add callback URL on Kakao, go to `Product settings` >
-`Kakao Login` > `Redirect URI`.
-
-## Generate and activate a `client_secret`
-
-- Go to `Product settings` > `Kakao Login` > `Security`.
-- Click on the `Kakao Login` switch to enable Kakao Login.
-- Click on `generate code` at the bottom to generate the `Client secret code` -- this will serve as a `client_secret` for your supabase project.
-- Make sure you enabled `Client secret code` by selecting `enable` from the `Activation state` section.
 
 ## Additional configurations on Kakao Developers portal
 
@@ -62,78 +40,160 @@ This will serve as the `client_id` when you make API calls to authenticate the u
 
 ![Consent items needs to be set.](/docs/img/guides/auth-kakao/kakao-developers-consent-items-set.png)
 
-## Add your OAuth credentials to Supabase
 
-<SocialProviderSettingsSupabase provider="Kakao" />
-
-## Add login code to your client app
 
 <Tabs
   scrollable
-  size="small"
+  size="large"
   type="underlined"
-  defaultActiveId="js"
-  queryGroup="language"
+  defaultActiveId="web"
+  queryGroup="platform"
 >
-<TabPanel id="js" label="JavaScript">
+  <TabPanel id="web" label="Web">
+    ## Obtain a REST API key from your kakao app
 
-When your user signs in, call [signInWithOAuth()](/docs/reference/javascript/auth-signinwithoauth) with `kakao` as the `provider`:
+    This will serve as the `client_id` when you make API calls to authenticate the user.
 
-```js
-async function signInWithKakao() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'kakao',
-  })
-}
-```
+    - Go to `My Application`.
+    - Click on your app.
+    - You will be redirected to `Summary` tab of your app.
+    - In the `App Keys` section you will see `REST API key` -- this ID will become your `client_id` later.
 
-</TabPanel>
-<TabPanel id="kotlin" label="Kotlin">
+    ## Find your callback URL
 
-When your user signs in, call [signInWith(Provider)](/docs/reference/kotlin/auth-signinwithoauth) with `Kakao` as the `Provider`:
+    <SocialProviderSetup provider="Kakao" />
 
-```kotlin
-suspend fun signInWithKakao() {
-	supabase.auth.signInWith(Kakao)
-}
-```
+    - To add callback URL on Kakao, go to
+    `Product settings` > `Kakao Login` > `Redirect URI`.
 
-</TabPanel>
-</Tabs>
+    ## Generate and activate a `client_secret`
 
-<OAuthPkceFlow />
+    - Go to `Product settings` > `Kakao Login` > `Security`.
+    - Click on the `Kakao Login` switch to enable Kakao Login.
+    - Click on `generate code` at the bottom to generate the `Client secret code` -- this will serve as a
+    `client_secret` for your supabase project.
+    - Make sure you enabled `Client secret code` by selecting `enable` from the `Activation state` section.
 
-<Tabs
-  scrollable
-  size="small"
-  type="underlined"
-  defaultActiveId="js"
-  queryGroup="language"
->
-<TabPanel id="js" label="JavaScript">
+    ## Add your OAuth credentials to Supabase
 
-When your user signs out, call [signOut()](/docs/reference/javascript/auth-signout) to remove them from the browser session and any objects from localStorage:
+    <SocialProviderSettingsSupabase provider="Kakao" />
 
-```js
-async function signOut() {
-  const { error } = await supabase.auth.signOut()
-}
-```
+    ## Add login code to your client app
 
-</TabPanel>
-<TabPanel id="kotlin" label="Kotlin">
+    <Tabs
+      scrollable
+      size="small"
+      type="underlined"
+      defaultActiveId="js"
+      queryGroup="language"
+    >
+      <TabPanel id="js" label="JavaScript">
 
-When your user signs out, call [logout()](/docs/reference/kotlin/auth-signout) to remove them from the browser session and any objects from localStorage:
+      When your user signs in, call [signInWithOAuth()](/docs/reference/javascript/auth-signinwithoauth) with `kakao` as the `provider`:
 
-```kotlin
-suspend fun signOut() {
-	supabase.auth.signOut()
-}
-```
+      ```js
+      async function signInWithKakao() {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'kakao',
+        })
+      }
+      ```
 
-</TabPanel>
+      </TabPanel>
+      <TabPanel id="kotlin" label="Kotlin">
+
+      When your user signs in, call [signInWith(Provider)](/docs/reference/kotlin/auth-signinwithoauth) with `Kakao` as the `Provider`:
+
+      ```kotlin
+      suspend fun signInWithKakao() {
+        supabase.auth.signInWith(Kakao)
+      }
+      ```
+
+      </TabPanel>
+      </Tabs>
+
+      <OAuthPkceFlow />
+
+      <Tabs
+        scrollable
+        size="small"
+        type="underlined"
+        defaultActiveId="js"
+        queryGroup="language"
+      >
+      <TabPanel id="js" label="JavaScript">
+
+      When your user signs out, call [signOut()](/docs/reference/javascript/auth-signout) to remove them from the browser session and any objects from localStorage:
+
+      ```js
+      async function signOut() {
+        const { error } = await supabase.auth.signOut()
+      }
+      ```
+
+      </TabPanel>
+      <TabPanel id="kotlin" label="Kotlin">
+
+      When your user signs out, call [logout()](/docs/reference/kotlin/auth-signout) to remove them from the browser session and any objects from localStorage:
+
+      ```kotlin
+      suspend fun signOut() {
+        supabase.auth.signOut()
+      }
+      ```
+
+      </TabPanel>
+    </Tabs>
+
+  </TabPanel>
+  <TabPanel id="native" label="Native">
+    ## Obtain a Native app key from your kakao app
+    This will be used as the `audience` with OpenId Connect.
+    - Go to `My Application`.
+    - Click on your app.
+    - You will be redirected to `Summary` tab of your app.
+    - In the `App Keys` section you will see `Native app key`
+
+    ## Add your Native app key to Supabase
+    - Go to your [Supabase Project Dashboard](https://supabase.com/dashboard)
+    - Go to `Authentication` > `Configuration` > `Providers` > `Kakao`
+    - Add your `Native app key` to the `Native App Key` field.
+    - Click `Save`
+
+    ## Add login code to your client app
+    <Tabs
+      scrollable
+      size="small"
+      type="underlined"
+      defaultActiveId="flutter"
+      queryGroup="language"
+    >
+      <TabPanel id="flutter" label="Flutter">
+
+      ```dart
+      import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+      import 'package:supabase_flutter/supabase_flutter.dart';
+
+      signInWithKakao() async {
+        var isKakaoInstalled = await isKakaoTalkInstalled();
+        OAuthToken token;
+        if (isKakaoInstalled) {
+          token = await UserApi.instance.loginWithKakaoTalk();
+        } else {
+          token = await UserApi.instance.loginWithKakaoAccount();
+        }
+        await supabase.auth.signInWithIdToken(provider: OAuthProvider.kakao, idToken: token.idToken!);
+      }
+
+      ```
+      </TabPanel>
+    </Tabs>
+
+  </TabPanel>
 </Tabs>
 
 ## Resources
 
 - [Kakao Developers Portal](https://developers.kakao.com).
+
