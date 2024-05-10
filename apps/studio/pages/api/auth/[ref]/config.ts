@@ -88,6 +88,7 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
     EXTERNAL_GOOGLE_SECRET: null,
     EXTERNAL_KAKAO_ENABLED: external?.kakao ?? false,
     EXTERNAL_KAKAO_CLIENT_ID: null,
+    EXTERNAL_KAKAO_NATIVE_APP_KEY: null,
     EXTERNAL_KAKAO_SECRET: null,
     EXTERNAL_KEYCLOAK_ENABLED: external?.keycloak ?? false,
     EXTERNAL_KEYCLOAK_CLIENT_ID: null,

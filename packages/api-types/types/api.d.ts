@@ -2213,6 +2213,7 @@ export interface components {
       EXTERNAL_GOOGLE_SKIP_NONCE_CHECK: boolean
       EXTERNAL_KAKAO_ENABLED: boolean
       EXTERNAL_KAKAO_CLIENT_ID: string
+      EXTERNAL_KAKAO_NATIVE_APP_KEY: string
       EXTERNAL_KAKAO_SECRET: string
       EXTERNAL_KEYCLOAK_ENABLED: boolean
       EXTERNAL_KEYCLOAK_CLIENT_ID: string
@@ -2375,6 +2376,7 @@ export interface components {
       EXTERNAL_GOOGLE_SKIP_NONCE_CHECK?: boolean
       EXTERNAL_KAKAO_ENABLED?: boolean
       EXTERNAL_KAKAO_CLIENT_ID?: string
+      EXTERNAL_KAKAO_NATIVE_APP_KEY?: string
       EXTERNAL_KAKAO_SECRET?: string
       EXTERNAL_KEYCLOAK_ENABLED?: boolean
       EXTERNAL_KEYCLOAK_CLIENT_ID?: string
@@ -5319,8 +5321,9 @@ export interface components {
       external_google_enabled: boolean | null
       external_google_secret: string | null
       external_google_skip_nonce_check: boolean | null
-      external_kakao_client_id: string | null
       external_kakao_enabled: boolean | null
+      external_kakao_client_id: string | null
+      external_kakao_native_app_key: string | null
       external_kakao_secret: string | null
       external_keycloak_client_id: string | null
       external_keycloak_enabled: boolean | null
@@ -5567,6 +5570,7 @@ export interface components {
       external_google_skip_nonce_check?: boolean
       external_kakao_enabled?: boolean
       external_kakao_client_id?: string
+      external_kakao_native_app_key?: string
       external_kakao_secret?: string
       external_keycloak_enabled?: boolean
       external_keycloak_client_id?: string
