@@ -1,3 +1,5 @@
+'use client'
+
 import * as LabelPrimitive from '@radix-ui/react-label'
 import { Slot } from '@radix-ui/react-slot'
 import * as React from 'react'
@@ -8,6 +10,7 @@ import {
   FieldValues,
   FormProvider,
   useFormContext,
+  useWatch,
 } from 'react-hook-form'
 
 import { cn } from '../../../lib/utils/cn'
@@ -91,7 +94,7 @@ const FormLabel = React.forwardRef<
       className={cn(
         'text-foreground-light',
         'transition-colors',
-        error && 'text-destructive',
+        error && '!text-destructive',
         className,
         'leading-normal'
       )}
@@ -170,4 +173,5 @@ export {
   FormLabel,
   FormMessage,
   useFormField,
+  useWatch,
 }

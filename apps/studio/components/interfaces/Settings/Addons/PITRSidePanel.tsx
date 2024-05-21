@@ -1,20 +1,18 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import clsx from 'clsx'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
 
 import { useParams } from 'common'
 import { useProjectAddonRemoveMutation } from 'data/subscriptions/project-addon-remove-mutation'
 import { useProjectAddonUpdateMutation } from 'data/subscriptions/project-addon-update-mutation'
 import { useProjectAddonsQuery } from 'data/subscriptions/project-addons-query'
-import { useCheckPermissions, useSelectedOrganization, useSelectedProject, useStore } from 'hooks'
+import { useCheckPermissions, useSelectedOrganization, useSelectedProject } from 'hooks'
 import { BASE_PATH } from 'lib/constants'
 import Telemetry from 'lib/telemetry'
-import { useTheme } from 'next-themes'
-
 import { subscriptionHasHipaaAddon } from 'components/interfaces/Billing/Subscription/Subscription.utils'
-import { CriticalIcon, WarningIcon } from 'ui-patterns/Icons/StatusIcons'
 import { useReadReplicasQuery } from 'data/read-replicas/replicas-query'
 import { useOrgSubscriptionQuery } from 'data/subscriptions/org-subscription-query'
 import type { AddonVariantId } from 'data/subscriptions/types'
@@ -30,7 +28,9 @@ import {
   IconExternalLink,
   Radio,
   SidePanel,
+  cn,
 } from 'ui'
+import { CriticalIcon, WarningIcon } from 'ui-patterns/Icons/StatusIcons'
 
 const PITR_CATEGORY_OPTIONS: {
   id: 'off' | 'on'
@@ -53,7 +53,6 @@ const PITR_CATEGORY_OPTIONS: {
 ]
 
 const PITRSidePanel = () => {
-  const { ui } = useStore()
   const router = useRouter()
   const { ref: projectRef } = useParams()
   const { resolvedTheme } = useTheme()
@@ -84,34 +83,20 @@ const PITRSidePanel = () => {
 
   const { mutate: updateAddon, isLoading: isUpdating } = useProjectAddonUpdateMutation({
     onSuccess: () => {
-      ui.setNotification({
-        category: 'success',
-        message: `Successfully updated point in time recovery duration`,
-      })
+      toast.success(`Successfully updated point in time recovery duration`)
       onClose()
     },
     onError: (error) => {
-      ui.setNotification({
-        error,
-        category: 'error',
-        message: `Unable to update PITR: ${error.message}`,
-      })
+      toast.error(`Unable to update PITR: ${error.message}`)
     },
   })
   const { mutate: removeAddon, isLoading: isRemoving } = useProjectAddonRemoveMutation({
     onSuccess: () => {
-      ui.setNotification({
-        category: 'success',
-        message: `Successfully disabled point in time recovery`,
-      })
+      toast.success(`Successfully disabled point in time recovery`)
       onClose()
     },
     onError: (error) => {
-      ui.setNotification({
-        error,
-        category: 'error',
-        message: `Unable to disable PITR: ${error.message}`,
-      })
+      toast.error(`Unable to disable PITR: ${error.message}`)
     },
   })
   const isSubmitting = isUpdating || isRemoving
@@ -233,7 +218,7 @@ const PITRSidePanel = () => {
                 return (
                   <div
                     key={option.id}
-                    className={clsx('col-span-3 group space-y-1', isFreePlan && 'opacity-75')}
+                    className={cn('col-span-3 group space-y-1', isFreePlan && 'opacity-75')}
                     onClick={() => {
                       setSelectedCategory(option.id)
                       if (option.id === 'off') {
@@ -260,7 +245,7 @@ const PITRSidePanel = () => {
                   >
                     <img
                       alt="Point-In-Time-Recovery"
-                      className={clsx(
+                      className={cn(
                         'relative rounded-xl transition border bg-no-repeat bg-center bg-cover cursor-pointer w-[160px] h-[96px]',
                         isSelected
                           ? 'border-foreground'
@@ -272,7 +257,7 @@ const PITRSidePanel = () => {
                     />
 
                     <p
-                      className={clsx(
+                      className={cn(
                         'text-sm transition',
                         isSelected ? 'text-foreground' : 'text-foreground-light'
                       )}
@@ -397,33 +382,24 @@ const PITRSidePanel = () => {
           {hasChanges && !blockDowngradeDueToReadReplicas && (
             <>
               {selectedOption === 'pitr_0' ||
-              (selectedPitr?.price ?? 0) < (subscriptionPitr?.variant.price ?? 0) ? (
-                subscription?.billing_via_partner === false && (
-                  <p className="text-sm text-foreground-light">
-                    Upon clicking confirm, the add-on is removed immediately and any unused time in
-                    the current billing cycle is added as prorated credits to your organization and
-                    used in subsequent billing cycles.
-                  </p>
-                )
-              ) : (
-                <p className="text-sm text-foreground-light">
-                  Upon clicking confirm, the amount of{' '}
-                  <span className="text-foreground">{formatCurrency(selectedPitr?.price)}</span>{' '}
-                  will be added to your monthly invoice.{' '}
-                  {subscription?.billing_via_partner ? (
-                    <>
-                      For the current billing cycle you'll be charged a prorated amount at the end
-                      of the cycle.{' '}
-                    </>
-                  ) : (
-                    <>
-                      The addon is prepaid per month and in case of a downgrade, you get credits for
-                      the remaining time. For the current billing cycle you're immediately charged a
-                      prorated amount for the remaining days.
-                    </>
+              (selectedPitr?.price ?? 0) < (subscriptionPitr?.variant.price ?? 0)
+                ? subscription?.billing_via_partner === false && (
+                    <p className="text-sm text-foreground-light">
+                      Upon clicking confirm, the add-on is removed immediately and any unused time
+                      in the current billing cycle is added as prorated credits to your organization
+                      and used in subsequent billing cycles.
+                    </p>
+                  )
+                : !subscription?.billing_via_partner && (
+                    <p className="text-sm text-foreground-light">
+                      Upon clicking confirm, the amount of{' '}
+                      <span className="text-foreground">{formatCurrency(selectedPitr?.price)}</span>{' '}
+                      will be added to your monthly invoice. The addon is prepaid per month and in
+                      case of a downgrade, you get credits for the remaining time. For the current
+                      billing cycle you're immediately charged a prorated amount for the remaining
+                      days.
+                    </p>
                   )}
-                </p>
-              )}
 
               {subscription?.billing_via_partner &&
                 subscription.scheduled_plan_change?.target_plan !== undefined && (

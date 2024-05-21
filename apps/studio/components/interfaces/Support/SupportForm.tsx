@@ -1,28 +1,12 @@
-import { useParams } from 'common'
 import { CLIENT_LIBRARIES } from 'common/constants'
+import { AlertCircle, ExternalLink, HelpCircle, Loader2, Mail, Plus, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import {
-  AlertDescription_Shadcn_,
-  AlertTitle_Shadcn_,
-  Alert_Shadcn_,
-  Button,
-  Checkbox,
-  Form,
-  IconAlertCircle,
-  IconExternalLink,
-  IconLoader,
-  IconMail,
-  IconPlus,
-  IconX,
-  Input,
-  Listbox,
-} from 'ui'
+import toast from 'react-hot-toast'
 
-import Divider from 'components/ui/Divider'
+import { useParams } from 'common'
 import InformationBox from 'components/ui/InformationBox'
-import MultiSelect from 'ui-patterns/MultiSelect'
 import ShimmeringLoader from 'components/ui/ShimmeringLoader'
 import { getProjectAuthConfig } from 'data/auth/auth-config-query'
 import { useSendSupportTicketMutation } from 'data/feedback/support-ticket-send'
@@ -30,11 +14,22 @@ import { useOrganizationsQuery } from 'data/organizations/organizations-query'
 import type { Project } from 'data/projects/project-detail-query'
 import { useProjectsQuery } from 'data/projects/projects-query'
 import { useOrgSubscriptionQuery } from 'data/subscriptions/org-subscription-query'
-import { useFlag, useStore } from 'hooks'
+import { useFlag } from 'hooks'
 import useLatest from 'hooks/misc/useLatest'
 import { detectBrowser } from 'lib/helpers'
 import { useProfile } from 'lib/profile'
-import { HelpCircle } from 'lucide-react'
+import {
+  AlertDescription_Shadcn_,
+  AlertTitle_Shadcn_,
+  Alert_Shadcn_,
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  Listbox,
+  Separator,
+} from 'ui'
+import MultiSelect from 'ui-patterns/MultiSelect'
 import DisabledStateForFreeTier from './DisabledStateForFreeTier'
 import { CATEGORY_OPTIONS, SERVICE_OPTIONS, SEVERITY_OPTIONS } from './Support.constants'
 import { formatMessage, uploadAttachments } from './SupportForm.utils'
@@ -47,7 +42,6 @@ export interface SupportFormProps {
 }
 
 const SupportForm = ({ setSentCategory }: SupportFormProps) => {
-  const { ui } = useStore()
   const { isReady } = useRouter()
   const { ref, slug, subject, category, message } = useParams()
 
@@ -77,15 +71,11 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
 
   const { mutate: submitSupportTicket } = useSendSupportTicketMutation({
     onSuccess: (res, variables) => {
-      ui.setNotification({ category: 'success', message: 'Support request sent. Thank you!' })
+      toast.success('Support request sent. Thank you!')
       setSentCategory(variables.category)
     },
     onError: (error) => {
-      ui.setNotification({
-        error,
-        category: 'error',
-        message: `Failed to submit support ticket: ${error.message}`,
-      })
+      toast.error(`Failed to submit support ticket: ${error.message}`)
       setIsSubmitting(false)
     },
   })
@@ -146,10 +136,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
 
     setUploadedFiles(uploadedFiles.concat(itemsToBeUploaded))
     if (items.length + uploadedFiles.length > MAX_ATTACHMENTS) {
-      ui.setNotification({
-        category: 'info',
-        message: `Only up to ${MAX_ATTACHMENTS} attachments are allowed`,
-      })
+      toast(`Only up to ${MAX_ATTACHMENTS} attachments are allowed`)
     }
 
     event.target.value = ''
@@ -364,7 +351,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                     <div className="space-y-2">
                       <p className="text-sm prose">Which project is affected?</p>
                       <div className="border rounded-md px-4 py-2 flex items-center space-x-2">
-                        <IconAlertCircle strokeWidth={2} className="text-foreground-light" />
+                        <AlertCircle size={16} strokeWidth={2} className="text-foreground-light" />
                         <p className="text-sm prose">Failed to retrieve projects</p>
                       </div>
                     </div>
@@ -420,7 +407,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                   </p>
                 ) : isLoadingSubscription && selectedProjectRef !== 'no-project' ? (
                   <div className="flex items-center space-x-2 mt-2">
-                    <IconLoader size={14} className="animate-spin" />
+                    <Loader2 size={14} className="animate-spin" />
                     <p className="text-sm text-foreground-light">Checking project's plan</p>
                   </div>
                 ) : (
@@ -450,7 +437,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                     <div className="space-y-2">
                       <p className="text-sm prose">Which organization is affected?</p>
                       <div className="border rounded-md px-4 py-2 flex items-center space-x-2">
-                        <IconAlertCircle strokeWidth={2} className="text-foreground-light" />
+                        <AlertCircle size={16} strokeWidth={2} className="text-foreground-light" />
                         <p className="text-sm prose">Failed to retrieve organizations</p>
                       </div>
                     </div>
@@ -480,7 +467,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
             {subscription?.plan.id !== 'enterprise' && values.category !== 'Login_issues' && (
               <div className="px-6">
                 <InformationBox
-                  icon={<IconAlertCircle strokeWidth={2} />}
+                  icon={<AlertCircle size={18} strokeWidth={2} />}
                   defaultVisibility={true}
                   hideCollapse={true}
                   title="Expected response times are based on your project's plan"
@@ -523,7 +510,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                             Upgrade project
                           </Link>
                         </Button>
-                        <Button asChild type="default" icon={<IconExternalLink size={14} />}>
+                        <Button asChild type="default" icon={<ExternalLink />}>
                           <Link
                             href="https://supabase.com/contact/enterprise"
                             target="_blank"
@@ -539,7 +526,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
               </div>
             )}
 
-            <Divider light />
+            <Separator />
 
             {!isDisabled ? (
               <>
@@ -568,7 +555,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                                 className="flex items-center space-x-2 text-foreground-light underline hover:text-foreground transition"
                               >
                                 Github discussions
-                                <IconExternalLink size={14} strokeWidth={2} className="ml-1" />
+                                <ExternalLink size={14} strokeWidth={2} className="ml-1" />
                               </Link>
                               <span> for a quick answer</span>
                             </p>
@@ -636,7 +623,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                                   <Button
                                     asChild
                                     type="default"
-                                    icon={<IconExternalLink size={14} strokeWidth={1.5} />}
+                                    icon={<ExternalLink size={14} strokeWidth={1.5} />}
                                   >
                                     <Link href={library.url} target="_blank" rel="noreferrer">
                                       View Github issues
@@ -662,7 +649,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                               <Button
                                 asChild
                                 type="default"
-                                icon={<IconExternalLink size={14} strokeWidth={1.5} />}
+                                icon={<ExternalLink size={14} strokeWidth={1.5} />}
                               >
                                 <Link
                                   href="https://github.com/supabase/supabase"
@@ -719,7 +706,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                               <Button
                                 asChild
                                 type="default"
-                                icon={<IconExternalLink strokeWidth={1.5} />}
+                                icon={<ExternalLink strokeWidth={1.5} />}
                               >
                                 <Link
                                   href="https://github.com/orgs/supabase/discussions/17817"
@@ -778,7 +765,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                               ].join(' ')}
                               onClick={() => removeUploadedFile(idx)}
                             >
-                              <IconX size={12} strokeWidth={2} />
+                              <X size={12} strokeWidth={2} />
                             </div>
                           </div>
                         ))}
@@ -792,7 +779,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                               if (uploadButtonRef.current) (uploadButtonRef.current as any).click()
                             }}
                           >
-                            <IconPlus strokeWidth={2} size={20} />
+                            <Plus strokeWidth={2} size={20} />
                           </div>
                         )}
                       </div>
@@ -811,7 +798,7 @@ const SupportForm = ({ setSentCategory }: SupportFormProps) => {
                         <Button
                           htmlType="submit"
                           size="small"
-                          icon={<IconMail />}
+                          icon={<Mail />}
                           disabled={isSubmitting}
                           loading={isSubmitting}
                         >
