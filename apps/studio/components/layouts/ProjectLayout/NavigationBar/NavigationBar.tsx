@@ -99,82 +99,84 @@ const NavigationBar = () => {
           'group py-2 z-10 h-full w-14 data-[state=expanded]:w-[13rem]',
           'border-r bg-studio border-default data-[state=expanded]:shadow-xl',
           'transition-width duration-200',
-          'hide-scrollbar flex flex-col justify-between overflow-y-auto'
+          'hide-scrollbar flex flex-col justify-between'
         )}
         onMouseEnter={() => snap.setNavigationPanelOpen(true)}
         onMouseLeave={() => {
           if (!userDropdownOpen) snap.setNavigationPanelOpen(false)
         }}
       >
-        <ul className="flex flex-col gap-y-1 justify-start px-2">
-          {(!navLayoutV2 || !IS_PLATFORM) && (
-            <Link
-              href={IS_PLATFORM ? '/projects' : `/project/${projectRef}`}
-              className="mx-2 flex items-center h-[40px]"
-              onClick={onCloseNavigationIconLink}
-            >
-              <img
-                alt="Supabase"
-                src={`${router.basePath}/img/supabase-logo.svg`}
-                className="absolute h-[40px] w-6 cursor-pointer rounded"
-              />
-            </Link>
-          )}
-          <NavigationIconLink
-            isActive={isUndefined(activeRoute) && !isUndefined(router.query.ref)}
-            route={{
-              key: 'HOME',
-              label: 'Home',
-              icon: <Home size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
-              link: `/project/${projectRef}`,
-            }}
+        {(!navLayoutV2 || !IS_PLATFORM) && (
+          <Link
+            href={IS_PLATFORM ? '/projects' : `/project/${projectRef}`}
+            className="mx-2 flex flex-col pl-2 h-[40px] mb-1"
             onClick={onCloseNavigationIconLink}
-          />
-          <Separator className="my-1 bg-border-muted" />
-          {toolRoutes.map((route) => (
+          >
+            <img
+              alt="Supabase"
+              src={`${router.basePath}/img/supabase-logo.svg`}
+              className="h-[40px] w-6 cursor-pointer rounded z-10 bg-surface-75"
+            />
+          </Link>
+        )}
+        <div className="overflow-y-scroll">
+          <ul className="flex bg-surface-75 flex-col gap-y-1 px-2 justify-start">
             <NavigationIconLink
-              key={route.key}
-              route={route}
-              isActive={activeRoute === route.key}
+              isActive={isUndefined(activeRoute) && !isUndefined(router.query.ref)}
+              route={{
+                key: 'HOME',
+                label: 'Home',
+                icon: <Home size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+                link: `/project/${projectRef}`,
+              }}
               onClick={onCloseNavigationIconLink}
             />
-          ))}
-          <Separator className="my-1 bg-border-muted" />
-          {productRoutes.map((route) => (
-            <NavigationIconLink
-              key={route.key}
-              route={route}
-              isActive={activeRoute === route.key}
-              onClick={onCloseNavigationIconLink}
-            />
-          ))}
-          <Separator className="my-1 bg-border-muted" />
-          {otherRoutes.map((route) => {
-            if (route.key === 'api' && isNewAPIDocsEnabled) {
-              return (
-                <NavigationIconButton
-                  key={route.key}
-                  onClick={() => {
-                    snap.setShowProjectApiDocs(true)
-                    snap.setNavigationPanelOpen(false)
-                  }}
-                  icon={<FileText size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />}
-                >
-                  Project API
-                </NavigationIconButton>
-              )
-            } else {
-              return (
-                <NavigationIconLink
-                  key={route.key}
-                  route={route}
-                  isActive={activeRoute === route.key}
-                  onClick={onCloseNavigationIconLink}
-                />
-              )
-            }
-          })}
-        </ul>
+            <Separator className="my-1 bg-border-muted" />
+            {toolRoutes.map((route) => (
+              <NavigationIconLink
+                key={route.key}
+                route={route}
+                isActive={activeRoute === route.key}
+                onClick={onCloseNavigationIconLink}
+              />
+            ))}
+            <Separator className="my-1 bg-border-muted" />
+            {productRoutes.map((route) => (
+              <NavigationIconLink
+                key={route.key}
+                route={route}
+                isActive={activeRoute === route.key}
+                onClick={onCloseNavigationIconLink}
+              />
+            ))}
+            <Separator className="my-1 bg-border-muted" />
+            {otherRoutes.map((route) => {
+              if (route.key === 'api' && isNewAPIDocsEnabled) {
+                return (
+                  <NavigationIconButton
+                    key={route.key}
+                    onClick={() => {
+                      snap.setShowProjectApiDocs(true)
+                      snap.setNavigationPanelOpen(false)
+                    }}
+                    icon={<FileText size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />}
+                  >
+                    Project API
+                  </NavigationIconButton>
+                )
+              } else {
+                return (
+                  <NavigationIconLink
+                    key={route.key}
+                    route={route}
+                    isActive={activeRoute === route.key}
+                    onClick={onCloseNavigationIconLink}
+                  />
+                )
+              }
+            })}
+          </ul>
+        </div>
 
         <ul className="flex flex-col px-2 gap-y-1">
           {settingsRoutes.map((route) => (
