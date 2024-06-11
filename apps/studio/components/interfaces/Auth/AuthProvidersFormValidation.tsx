@@ -939,6 +939,11 @@ const EXTERNAL_PROVIDER_KAKAO = {
       title: 'REST API Key',
       type: 'string',
     },
+    EXTERNAL_KAKAO_NATIVE_APP_KEY: {
+      title: 'Native App Key',
+      descriptionOptional: 'Optional',
+      type: 'string',
+    },
     // [TODO] Update docs
     EXTERNAL_KAKAO_SECRET: {
       title: 'Client Secret Code',
