@@ -1,0 +1,58 @@
+---
+id: 'replication-considerations'
+title: 'Replication and Analytics with Supabase'
+description: 'Considerations and FAQs when setting up replication'
+sidebar_label: 'Considerations'
+---
+
+# Why not use my Primary database?
+
+If you want to run analytics on your app, you may wonder why you could not just plug in your database connection string to an analytics tool and go. In some cases, you could, but we do not recommend it. Here's why:
+
+### Security
+
+Adding a new system to your database can expose data and settings that you may want to keep private (or may be required to keep private due to compliance or legislation). Using a read-only user is possible but you must ensure that access is controlled and regularly audited.
+
+### Performance
+
+Your users want to create or view new content and your analytics queries want to perform complex calculations on the past 3 months. Both of these wants will be sharing the same resources and one might win over the other; causing your users to have a bad experience or your analytics report to time out.
+
+### Recovery
+
+If you accidentally drop a table, you might not want to restore your whole project from a backup so you can check these values in your external system before your boss finds out.
+
+
+# Which connection string should I use?
+
+Always use the direct connection string for logical replication. 
+
+Connections through a pooler, such as Supavisor, will not work.
+
+# The tool I am using does not support IPv6
+
+No worries! Simply enable the [IPv4 addon](/guides/platform/ipv4-address) for your project.
+
+# What is XMIN and should it be used?
+
+Xmin is a different form of replication from logical replication and should only be used if logical replication is not available for your database (i.e. older versions of Postgres).
+
+Xmin performs replication by checking the [xmin system column](https://www.postgresql.org/docs/current/ddl-system-columns.html) and determining if that row has already been synchronized.
+
+It does not capture deletion of data and is **not recommended**, particularly for larger databases.
+
+# Can I configure replication in the Dashboard?
+
+You can view [publications](https://supabase.com/dashboard/project/default/database/publications) in the Dashboard but all steps to configure replication must be done using the [SQL Editor](https://supabase.com/dashboard/project/default/sql/new) or a tool of your choice.
+
+# How can I see the status of replication?
+
+Postgres has some system tables that allow you to monitor the status of replication:
+
+## Primary
+
+- `select * from pg_stat_replication;` - Shows the `lag` of active replicas to indicate how far behind they are from the primary database
+- `select * from pg_replication_slots;` - Shows the last confirmed data that was sent and consumed on the slot
+
+## Replica
+
+- `select * from pg_subscription_rel;` - Shows the status of any subscriptions on a replica
