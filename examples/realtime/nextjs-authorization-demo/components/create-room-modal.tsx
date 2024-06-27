@@ -6,7 +6,8 @@ import { useEffect, useState } from 'react'
 
 export default function CreateRoomModal() {
   const supabase = createClient()
-  const [emails, setEmails] = useState<{ email: string; user_id: string }[] | undefined>([])
+  const [emails, setEmails] = useState<{ email: string; user_id: string }[]>([])
+
   useEffect(() => {
     supabase
       .from('profiles')
@@ -17,7 +18,6 @@ export default function CreateRoomModal() {
   const createRoom = async (formData: FormData) => {
     const name = formData.get('name') as string
     const ids = formData.getAll('emails[]')
-    await supabase.auth.getUser()
     const token = (await supabase.auth.getSession()).data.session!.access_token
     supabase.realtime.setAuth(token)
     await supabase.realtime.createChannel(name)
@@ -39,17 +39,21 @@ export default function CreateRoomModal() {
           name="name"
           placeholder="room_1"
         />
-        {emails && (
-          <div className="flex flex-col">
-            {emails?.map(({ email, user_id }) => (
-              <div key={`container_${email}`}>
-                <input key={`label_${email}`} type="checkbox" name="emails[]" value={user_id} />
-
-                <label key={email} htmlFor="emails[]">
-                  {email}
-                </label>
-              </div>
-            ))}
+        {emails.length && (
+          <div>
+            <label className="text-md">
+              Invitation List
+            </label>
+            <div className="flex flex-col">
+              {emails.map(({ email, user_id }) => (
+                <div key={`container_${email}`} className="flex space-x-0.5" >
+                  <input key={`label_${email}`} type="checkbox" name="emails[]" value={user_id} />
+                  <label key={email} htmlFor="emails[]">
+                    {email}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
         )}
         <SubmitButton

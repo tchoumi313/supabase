@@ -1,20 +1,20 @@
 # SupaSecureSlack
 
-Example application on how you can use Realtime Authorization feature to limit access to Realtime [Channels](https://supabase.com/docs/guides/realtime/concepts#channels) and limit access to the [Broadcast](https://supabase.com/docs/guides/realtime/broadcast) feature.
+Example ephemeral chat application on how you can use Realtime Authorization feature to limit access to Realtime [Channels](https://supabase.com/docs/guides/realtime/concepts#channels) and limit access to the [Broadcast](https://supabase.com/docs/guides/realtime/broadcast) feature.
 
 You can provide feedback on our [Github Discussion](https://github.com/orgs/supabase/discussions/22484).
 
 ## Objective
 
-Build a chat system using Realtime Broadcast with Authorized Channels where users can create rooms and invite existing users to a room.
+Build a chat system using Realtime Broadcast with Authorized Channels where users can create rooms, invite each other to rooms, and send each other ephemeral messages.
 
-Each room restricts the number of users authorized by applying RLS policies applied to `public` schema tables you'll be creating and the auto-generated `realtime` schema tables.
+Each room restricts the number of users authorized by applying RLS Policies applied to `public` schema tables you'll be creating and the auto-generated `realtime` schema tables.
 
 ## Run It
 
 1. Create a `.env.local` file with the required variables by running `cp .env.example .env.local`.
 2. [Create a new Supabase project](https://supabase.com/dashboard/new/_).
-3. Refer to the [Database Setup](#database-setup) section to create the necessary tables and policies.
+3. Refer to the [Database Setup](#database-setup) section to create the necessary tables and Policies.
 4. Copy the project's `URL` and `anon` API key from your project's [API Settings](https://supabase.com/dashboard/project/_/settings/api), and paste them into your `.env.local`.
 5. `npm install`
 6. `npm run dev`
@@ -23,7 +23,7 @@ Each room restricts the number of users authorized by applying RLS policies appl
 
 In this scenario both users are able to access it:
 ![Both users were able to connect](./chat_success.png)
-And here one of the user does not have access because their RLS rules made the user be denied access
+And here one of the user does not have access because their RLS Policies made the user be denied access
 ![Both users were able to connect](./chat_unauthorized.png)
 
 ## Schema
@@ -47,6 +47,8 @@ CREATE TABLE public.profiles (
   email text NOT NULL,
   user_id uuid REFERENCES auth.users (id)
 );
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ```
 
 #### `public.rooms_users`
@@ -57,15 +59,17 @@ CREATE TABLE public.rooms_users (
   user_id uuid REFERENCES auth.users (id),
   created_at timestamptz DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE public.rooms_users ENABLE ROW LEVEL SECURITY;
 ```
 
 ### Create RLS Policies
 
-We do have a lot of RLS policies to set up so we will group them by `schema.table` below.
+We do have a lot of RLS Policies to set up so we will group them by `schema.table` below.
 
-The most noteworthy ones are the policies created for `realtime.broadcasts` table as they will limit access to rooms by checking if an entry for a given room name and user id exists in the `public.rooms_users` table.
+The most noteworthy ones are the Policies created for `realtime.broadcasts` table as they will limit access to rooms by checking if an entry for a given room name and user id exists in the `public.rooms_users` table.
 
-> ⚠️ All the RLS policies here are meant for this demo. You may refer to them but make sure that your policies are tailored to your use case and secure your application.
+> ⚠️ All the RLS Policies here are meant for this demo. You may refer to them but make sure that your Policies are tailored to your use case and secure your application.
 
 #### `public.profiles`
 
@@ -177,7 +181,9 @@ $$
   BEGIN
     INSERT INTO public.profiles (user_id, email) VALUES (NEW.id, NEW.email); RETURN NEW;
   END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+   SECURITY DEFINER
+   SET search_path = public;
 
 CREATE OR REPLACE TRIGGER "on_new_auth_create_profile"
 AFTER INSERT ON auth.users FOR EACH ROW
@@ -192,7 +198,7 @@ GRANT EXECUTE ON FUNCTION insert_user () TO supabase_auth_admin;
 
 Before Realtime Authorization, Realtime Broadcast and Presence Channels were exposed to any client with a valid JWT, such as `anon` token.
 
-If you want your Channel secured and adhere to RLS policies then you will need to create the Channel before allowing your clients to connect to the Channel.
+If you want your Channel secured and adhere to RLS Policies then you will need to create the Channel before allowing your clients to connect to the Channel.
 
 > ⚠️ This will also impact access to `postgres_changes` Channels on connect.
 
@@ -228,6 +234,6 @@ curl -v -X POST 'https://<project_ref>.supabase.co/realtime/v1/api/channels'\
 
 ### Connecting to Broadcast is Essentially the Same
 
-The biggest difference between Broadcast and Broadcast Authorization is the latter's requirement of creating the Channel before clients subscribe to the Channel. Other than that, your clients can connect to Realtime Channel as they normally would and Realtime server will check RLS policies on client connect.
+The biggest difference between Broadcast and Broadcast Authorization is the latter's requirement of creating the Channel before clients subscribe to the Channel. Other than that, your clients can connect to Realtime Channel as they normally would and Realtime server will check RLS Policies on client connect.
 
 You can check this code at the [protected/page.tsx](app/protected/page.tsx).
