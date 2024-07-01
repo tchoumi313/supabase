@@ -37,11 +37,11 @@ When you want to connect to a Realtime Channel, you do something close to the fo
 
 ```tsx
 // With authenticated user token
-client.realtime.setAuth(token);
+client.realtime.setAuth(token)
 
-client.channel("channel").subscribe((status: string, err: any) => {
-  status === "SUBSCRIBED" && console.log("Connected")
-});
+client.channel('channel').subscribe((status: string, err: any) => {
+  status === 'SUBSCRIBED' && console.log('Connected')
+})
 ```
 
 This will enable you to send messages but they will all be public and every user would be able to intercept them if they had your anon token.
@@ -148,7 +148,7 @@ Upon channel subscription, we read the contents of your configuration and determ
 
 ![one-user-connection--light.png](../public/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/one-user-connection--light.png)
 
-Since we're doing this as soon as the user subscribe to Channel we should see a small increase in subscription  but after that we do not run any queries on the database and we use the stored context to control the actions a user can perform.
+Since we're doing this as soon as the user subscribe to Channel we should see a small increase in subscription but after that we do not run any queries on the database and we use the stored context to control the actions a user can perform.
 
 Latency between geographically close users is very important for a product like Realtime. To deliver messages as fast as possible between users on our global network we cache the policies.
 
