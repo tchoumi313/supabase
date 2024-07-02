@@ -30,7 +30,9 @@ TO authenticated
 USING ( true );
 ```
 
-This follows a similar approach to [Supabase Storage](https://supabase.com/docs/guides/storage/security/access-control) where we create a new table in the `realtime` schema that represents your [Channels](https://supabase.com/docs/guides/realtime/concepts#channels) as objects so you can write policies where SELECT and INSERT will determines what your users can access and use from Realtime.
+The `realtime.messages` table is created automatically by Supabase Realtime. It represents your [Channels](/docs/guides/realtime/concepts#channels) as objects against which you can write RLS policies. We test for a user's ability to `SELECT` and `INSERT` into this table to determine whether they can join, read, or post to a Realtime Channel.
+
+This approach of using RLS policies to control access should be familiar to users of [Supabase Storage](/docs/guides/storage/security/access-control).
 
 ## How it works without Authorization
 
@@ -46,6 +48,7 @@ client.channel('channel').subscribe((status: string, err: any) => {
 ```
 
 This will enable you to send messages but they will all be public and every user would be able to intercept them if they had your anon token.
+## Adding Authorization to Realtime Channels
 
 To convert this into a Realtime Channel that checks RLS policies requires only two steps:
 
@@ -82,9 +85,9 @@ to authenticated
 using ( realtime.topic() = 'locked' );
 ```
 
-## Enabling Authorization on Channel subscription
+### Enabling Authorization on Channel subscription
 
-Now that you have your RLS policies set you will need to define on your Channel subscription that you intend to use a private channel. To achieve it we've introduced a new configuration parameter `private` to signal to Realtime servers that you want to check authorization on the channel.
+Now that you have your RLS policies set, you will need to define on your Channel subscription that you intend to use a private channel. To achieve it we've introduced a new configuration parameter `private` to signal to Realtime servers that you want to check authorization on the channel.
 
 If you try to subscribe with an unauthorized user you will get a new error message informing the user that they do not have permission to access the topic.
 
@@ -92,7 +95,7 @@ If you try to subscribe with an unauthorized user you will get a new error messa
 // With anon user
 supabase
     .realtime
-    .channel("locked", { config: { private: true })
+    .channel("locked", { config: { private: true } })
     .subscribe((status: string, err: any) => {
         status == "CHANNEL_ERROR" && console.error(err.message);
     });
@@ -109,13 +112,13 @@ supabase.realtime.setAuth(token)
 
 supabase
     .realtime
-    .channel("locked", { config: { private: true })
+    .channel("locked", { config: { private: true } })
     .subscribe((status: string, err: any) => {
         status == "CHANNEL_ERROR" && console.error(err.message);
     });
 ```
 
-### More complex example
+### Advanced examples
 
 You can find a more complex example in the [Supabase demo folder](https://github.com/supabase/supabase/tree/master/examples/realtime/nextjs-authorization-demo) where we are using this feature to build chat rooms with restricted access.
 
@@ -155,7 +158,7 @@ Upon channel subscription, we read the contents of your configuration and determ
   alt="Flow of checks done against the databse to determine the policies for a user connection."
 />
 
-Since we're doing this as soon as the user subscribes to Channel we should see a small increase in subscriptions but after that we do not run any queries on the database and we use the stored context to control the actions a user can perform.
+Since we're doing this as soon as the user subscribes to Channel we should see a small latency increase in subscriptions but after that we do not run any queries on the database and we use the stored context to control the actions a user can perform.
 
 Latency between geographically close users is very important for a product like Realtime. To deliver messages as fast as possible between users on our global network, we cache the policies.
 
