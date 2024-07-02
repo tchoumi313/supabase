@@ -48,6 +48,7 @@ client.channel('channel').subscribe((status: string, err: any) => {
 ```
 
 This will enable you to send messages but they will all be public and every user would be able to intercept them if they had your anon token.
+
 ## Adding Authorization to Realtime Channels
 
 To convert this into a Realtime Channel that checks RLS policies requires only two steps:
@@ -93,12 +94,11 @@ If you try to subscribe with an unauthorized user you will get a new error messa
 
 ```tsx
 // With anon user
-supabase
-    .realtime
-    .channel("locked", { config: { private: true } })
-    .subscribe((status: string, err: any) => {
-        status == "CHANNEL_ERROR" && console.error(err.message);
-    });
+supabase.realtime
+  .channel('locked', { config: { private: true } })
+  .subscribe((status: string, err: any) => {
+    status == 'CHANNEL_ERROR' && console.error(err.message)
+  })
 
 // Outputs the following error:
 // "You do not have permissions to read from this Topic"
@@ -110,12 +110,11 @@ But if you connect with an authorized user you will be able to listen to all mes
 // With an authenticated user
 supabase.realtime.setAuth(token)
 
-supabase
-    .realtime
-    .channel("locked", { config: { private: true } })
-    .subscribe((status: string, err: any) => {
-        status == "CHANNEL_ERROR" && console.error(err.message);
-    });
+supabase.realtime
+  .channel('locked', { config: { private: true } })
+  .subscribe((status: string, err: any) => {
+    status == 'CHANNEL_ERROR' && console.error(err.message)
+  })
 ```
 
 ### Advanced examples
