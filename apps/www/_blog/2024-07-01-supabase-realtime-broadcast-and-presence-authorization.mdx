@@ -7,7 +7,8 @@ thumb: 2024-07-01-supabase-realtime-broadcast-and-presence-authorization/thumb.p
 categories:
 tags:
   - realtime
-date: '2024-06-26'
+  - engineering
+date: '2024-07-01'
 toc_depth: 2
 ---
 
@@ -130,11 +131,11 @@ We let you define that the channel itself is private! On Channel subscription yo
 
 The checks are done by running SELECT and INSERT queries on the new `realtime.messages` table which are then rollbacked so nothing is persisted. Then, based on the query result, we can determine the policies the user has for a given extension.
 
-![The table that is used to test the policies.](../public/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--dark.png)
+![The table that is used to test the policies.](/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--dark.png)
 
 The table that is used to test the policies.
 
-![The table that is used to test the policies.](../public/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--light.png)
+![The table that is used to test the policies.](/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--light.png)
 
 The table that is used to test the policies.
 
@@ -144,9 +145,9 @@ Now that we have set up everything on the database side, let's understand how it
 
 Upon channel subscription, we read the contents of your configuration and determine that you want to use a private channel, then we parse the information from your signed JSON Web Token (JWT), load them into a Postgres transaction using `set_config`, and verify them against the new `realtime.messages`table within the same transaction and we store the output as a group of policies within the context of the user's channel process.
 
-![one-user-connection--dark.png](../public/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/one-user-connection--dark.png)
+![one-user-connection--dark.png](/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/one-user-connection--dark.png)
 
-![one-user-connection--light.png](../public/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/one-user-connection--light.png)
+![one-user-connection--light.png](/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/one-user-connection--light.png)
 
 Since we're doing this as soon as the user subscribe to Channel we should see a small increase in subscription but after that we do not run any queries on the database and we use the stored context to control the actions a user can perform.
 
