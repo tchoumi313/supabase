@@ -23,11 +23,11 @@ For context, Supabase includes three useful extensions for building real-time ap
 This release introduces authorization for Broadcast and Presence using Row Level Security policies:
 
 ```sql
-CREATE POLICY "authenticated user can listen to all messages"
-ON "realtime"."messages"
-AS PERMISSIVE FOR SELECT
-TO authenticated
-USING ( true );
+create policy "authenticated user can listen to all messages"
+on "realtime"."messages"
+as permissive for select
+to authenticated
+using ( true );
 ```
 
 The `realtime.messages` table is created automatically by Supabase Realtime. It represents your [Channels](/docs/guides/realtime/concepts#channels) as objects against which you can write RLS policies. We test for a user's ability to `SELECT` and `INSERT` into this table to determine whether they can join, read, or post to a Realtime Channel.
@@ -42,7 +42,8 @@ When you want to connect to a Realtime Channel, you do something close to the fo
 // With authenticated user token
 client.realtime.setAuth(token)
 
-client.channel('channel').subscribe((status: string, err: any) => {
+client.channel('channel')
+.subscribe((status: string, err: any) => {
   status === 'SUBSCRIBED' && console.log('Connected')
 })
 ```
@@ -53,7 +54,7 @@ This will enable you to send messages but they will all be public and every user
 
 To convert this into a Realtime Channel that checks RLS policies requires only two steps:
 
-- [Create RLS policies](#create-rls-policies)
+- [Create RLS Policies](#create-rls-policies)
 - [Enabling Authorization on Channel subscription](#enabling-authorization-on-channel-subscription)
 
 ### Create RLS policies
@@ -63,17 +64,17 @@ Any RLS policy will work. Reference our [Github Discussion](github.com/orgs/supa
 With this example we'll keep it simple and allow authenticated users to connect to a channel, send and receive broadcast messages and track presences.
 
 ```sql
-CREATE POLICY "authenticated user listen to all"
-ON "realtime"."messages"
-AS PERMISSIVE FOR SELECT
-TO authenticated
-USING ( true );
+create policy "authenticated user listen to all"
+on "realtime"."messages"
+as permissive for select
+to authenticated
+using ( true );
 
-CREATE POLICY "authenticated user write to all"
-ON "realtime"."messages"
-AS PERMISSIVE FOR INSERT
-TO authenticated
-WITH CHECK ( true );
+create policy "authenticated user write to all"
+on "realtime"."messages"
+as permissive for insert
+to authenticated
+with check ( true );
 ```
 
 We also have a new database function called`realtime.topic()` which enables you to write Policies that take into consideration the name of the Channel trying to run the RLS Policy.
@@ -81,7 +82,7 @@ We also have a new database function called`realtime.topic()` which enables you 
 ```sql
 create policy "authenticated users can only read from 'locked' topic"
 on "realtime"."messages"
-as PERMISSIVE for SELECT
+as permissive for select
 to authenticated
 using ( realtime.topic() = 'locked' );
 ```
@@ -173,13 +174,13 @@ Another added bonus is the fact that if a user does not have access to a given C
 
 Realtime already has a mechanism to check valid refreshed JWTs used by your connection as a way to ensure the user connected continues to be valid. Now, we've added a step where we re-authorize the user by querying your database's `realtime.messages` table when Realtime receives a new user token. This is to make sure the already connected user continues to be authorized even when you've updated RLS policies.
 
-### Postgres Changes currently not supported
+### Postgres Changes Support
 
-Realtime Authorization currently supports only Broadcast and Presence. Postgres Changes already adheres to RLS policies on the tables you're listening to so you can continue using that authorization scheme for getting changes from your database.
+This method for Realtime Authorization currently only supports Broadcast and Presence. Postgres Changes already adheres to RLS policies on the tables you're listening to so you can continue using that authorization scheme for getting changes from your database.
 
 ## Availability
 
-Broadcast and Presence Authorization is available in Public Alpha. We are looking for feedback so please do share it in the [Github discussion](github.com/orgs/supabase/discussions/22484).
+Broadcast and Presence Authorization is available in Public Alpha. We are looking for feedback so please do share it in the [GitHub discussion](github.com/orgs/supabase/discussions/22484).
 
 ## Future Work
 
