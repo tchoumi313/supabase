@@ -49,8 +49,8 @@ This will enable you to send messages but they will all be public and every user
 
 To convert this into a Realtime Channel that checks RLS policies requires only two steps:
 
-- [Create RLS policies](#Create RLS policies)
-- [Enable authorization on Channel subscription](#Enabling Authorization on Channel subscription)
+- [Create RLS policies](https://www.notion.so/Blog-Post-for-Realtime-Authz-4600e5a2a3d34ecab5c9e1bbdf53524d?pvs=21)
+- [Enable authorization on connect](https://www.notion.so/Blog-Post-for-Realtime-Authz-4600e5a2a3d34ecab5c9e1bbdf53524d?pvs=21)
 
 ### Create RLS policies
 
@@ -72,7 +72,7 @@ TO authenticated
 WITH CHECK ( true );
 ```
 
-We also have a new database function called`realtime.topic()` which enables you to write Policies that take into consideration the name of the channel trying to run the RLS Policy.
+We also have a new database function called`realtime.topic()` which enables you to write Policies that take into consideration the name of the Channel trying to run the RLS Policy.
 
 ```sql
 create policy "authenticated users can only read from 'locked' topic"
@@ -84,7 +84,7 @@ using ( realtime.topic() = 'locked' );
 
 ## Enabling Authorization on Channel subscription
 
-Now that you have your RLS policies set you will need to define on your channel subscription that you intend to use a private channel. To achieve it we've introduced a new configuration parameter `private` to signal to Realtime servers that you want to check authorization on the channel.
+Now that you have your RLS policies set you will need to define on your Channel subscription that you intend to use a private channel. To achieve it we've introduced a new configuration parameter `private` to signal to Realtime servers that you want to check authorization on the channel.
 
 If you try to subscribe with an unauthorized user you will get a new error message informing the user that they do not have permission to access the topic.
 
@@ -125,11 +125,11 @@ We decided on an approach that keeps your database and RLS policies at the heart
 
 ### Database as a source of security
 
-To achieve it, we looked into our current solutions, namely how [Storage](https://supabase.com/docs/guides/storage/security/access-control) handles Access Control. Due to the nature of Realtime, our primitives are different as we have no assets stored in the database. So how did we achieve it?
+To achieve Realtime authorization, we looked into our current solutions, namely how [Storage](https://supabase.com/docs/guides/storage/security/access-control) handles Access Control. Due to the nature of Realtime, our primitives are different as we have no assets stored in the database. So how did we achieve it?
 
 We let you define that the channel itself is private! On Channel subscription you are able to inform Realtime to use a private channel and we will do the required checks.
 
-The checks are done by running SELECT and INSERT queries on the new `realtime.messages` table which are then rollbacked so nothing is persisted. Then, based on the query result, we can determine the policies the user has for a given extension.
+The checks are done by running SELECT and INSERT queries on the new `realtime.messages` table which are then rolled backed so nothing is persisted. Then, based on the query result, we can determine the policies the user has for a given extension.
 
 ![The table that is used to test the policies.](/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--dark.png)
 
@@ -149,15 +149,15 @@ Upon channel subscription, we read the contents of your configuration and determ
 
 ![one-user-connection--light.png](/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/one-user-connection--light.png)
 
-Since we're doing this as soon as the user subscribe to Channel we should see a small increase in subscription but after that we do not run any queries on the database and we use the stored context to control the actions a user can perform.
+Since we're doing this as soon as the user subscribes to Channel we should see a small increase in subscriptions but after that we do not run any queries on the database and we use the stored context to control the actions a user can perform.
 
-Latency between geographically close users is very important for a product like Realtime. To deliver messages as fast as possible between users on our global network we cache the policies.
+Latency between geographically close users is very important for a product like Realtime. To deliver messages as fast as possible between users on our global network, we cache the policies.
 
 We can maintain high throughput and low latency on a Realtime Channel with Broadcast and Presence authorization because:
 
 - the policy is only generated when a user connects to a Channel
-- the policy cached in memory close to your users
-- the policy cached for the duration of the connection or until the JWT expires
+- the policy cached in memory is close to your users
+- the policy is cached for the duration of the connection or until the JWT expires
 
 Another added bonus is the fact that if a user does not have access to a given Channel they won't be able to connect at all and their connections will be rejected.
 
