@@ -43,9 +43,11 @@ When you want to connect to a Realtime Channel, you do something close to the fo
 client.realtime.setAuth(token)
 
 client.channel('channel')
-.subscribe((status: string, err: any) => {
-  status === 'SUBSCRIBED' && console.log('Connected')
-})
+  .subscribe((status: string, err: any) => {
+    if (status === 'SUBSCRIBED') {
+      console.log('Connected')
+    }
+  })
 ```
 
 This will enable you to send messages but they will all be public and every user would be able to intercept them if they had your anon token.
@@ -98,7 +100,9 @@ If you try to subscribe with an unauthorized user you will get a new error messa
 supabase.realtime
   .channel('locked', { config: { private: true } })
   .subscribe((status: string, err: any) => {
-    status == 'CHANNEL_ERROR' && console.error(err.message)
+    if (status === 'CHANNEL_ERROR') {
+      console.error(err.message)
+    }
   })
 
 // Outputs the following error:
@@ -114,7 +118,9 @@ supabase.realtime.setAuth(token)
 supabase.realtime
   .channel('locked', { config: { private: true } })
   .subscribe((status: string, err: any) => {
-    status == 'CHANNEL_ERROR' && console.error(err.message)
+    if (status === 'CHANNEL_ERROR') {
+      console.error(err.message)
+    }
   })
 ```
 
