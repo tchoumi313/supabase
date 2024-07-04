@@ -324,7 +324,7 @@ const NavContainer = memo(function NavContainer({ children }: PropsWithChildren)
 })
 
 interface MainSkeletonProps extends PropsWithChildren {
-  menuId: MenuId
+  menuId?: MenuId
   NavigationMenu?: ReactNode
 }
 

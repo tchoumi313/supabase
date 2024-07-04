@@ -203,6 +203,7 @@ export const REFERENCES: References = {
     library: 'supabase-js',
     versions: ['v2', 'v1'],
     icon: '/img/libraries/javascript-icon',
+    __MIGRATED_VERSIONS: ['v2'],
   },
   dart: {
     name: 'Flutter',

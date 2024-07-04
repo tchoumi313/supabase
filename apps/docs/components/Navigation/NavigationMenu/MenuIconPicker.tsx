@@ -1,6 +1,3 @@
-'use client'
-
-import React from 'react'
 import {
   IconMenuApi,
   IconMenuAuth,
@@ -28,8 +25,6 @@ import {
   IconMenuDevCli,
   IconGitHub,
   IconSupport,
-  IconTerraform,
-  IconTroubleshooting,
   IconBranching,
 } from './MenuIcons'
 
