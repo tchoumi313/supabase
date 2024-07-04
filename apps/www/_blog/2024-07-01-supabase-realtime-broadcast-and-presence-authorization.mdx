@@ -40,9 +40,9 @@ To facilitate authorization in Realtime, a new table `realtime.messages` is crea
   }}
   alt="The table that is used to test the policies."
 />
-You can write Postgres RLS policies for this table and Realtime will use it them control the access to Broadcast and Presence for your channels based on the operations set in your policies:
-* `SELECT` policies: Able to receive messages from the channel
-* `INSERT` policies: Able to send messages to the channel
+You can write Postgres RLS policies for this table and Realtime will use it them control the access to
+Broadcast and Presence for your channels based on the operations set in your policies: * `SELECT` policies:
+Able to receive messages from the channel * `INSERT` policies: Able to send messages to the channel
 
 This approach to control access should be familiar to users of [Supabase Storage](/docs/guides/storage/security/access-control).
 
@@ -54,12 +54,11 @@ When you want to connect to a Realtime Channel, you do something close to the fo
 // With authenticated user token
 client.realtime.setAuth(token)
 
-client.channel('channel')
-  .subscribe((status: string, err: any) => {
-    if (status === 'SUBSCRIBED') {
-      console.log('Connected')
-    }
-  })
+client.channel('channel').subscribe((status: string, err: any) => {
+  if (status === 'SUBSCRIBED') {
+    console.log('Connected')
+  }
+})
 ```
 
 This will enable you to send messages but they will all be public and every user would be able to intercept them if they had your anon token.
