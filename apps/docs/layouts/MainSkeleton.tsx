@@ -1,13 +1,16 @@
 'use client'
 
-import { type PropsWithChildren, memo, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
+import { memo, useEffect, useRef, type PropsWithChildren, type ReactNode } from 'react'
+
 import { cn } from 'ui'
+
+import DefaultNavigationMenu, {
+  MenuId,
+} from '~/components/Navigation/NavigationMenu/NavigationMenu'
+import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
 import { DOCS_CONTENT_CONTAINER_ID } from '~/features/ui/helpers.constants'
 import { menuState, useMenuMobileOpen } from '~/hooks/useMenuState'
-
-import { type MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
-import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
 
 const Footer = dynamic(() => import('~/components/Navigation/Footer'))
 const NavigationMenu = dynamic(
@@ -264,7 +267,7 @@ const Container = memo(function Container({
   )
 })
 
-const NavContainer = memo(function NavContainer({ menuId }: { menuId: MenuId }) {
+const NavContainer = memo(function NavContainer({ children }: PropsWithChildren) {
   const mobileMenuOpen = useMenuMobileOpen()
 
   return (
@@ -313,14 +316,19 @@ const NavContainer = memo(function NavContainer({ menuId }: { menuId: MenuId }) 
             'lg:opacity-100 lg:visible'
           )}
         >
-          <NavigationMenu menuId={menuId} />
+          {children}
         </div>
       </div>
     </nav>
   )
 })
 
-function MainSkeleton({ children, menuId }: PropsWithChildren<{ menuId?: MenuId }>) {
+interface MainSkeletonProps extends PropsWithChildren {
+  menuId: MenuId
+  NavigationMenu?: ReactNode
+}
+
+function MainSkeleton({ children, menuId, NavigationMenu }: MainSkeletonProps) {
   const ref = useRef(null)
   const mobileMenuOpen = useMenuMobileOpen()
   const hideSideNav = !menuId
@@ -331,7 +339,9 @@ function MainSkeleton({ children, menuId }: PropsWithChildren<{ menuId?: MenuId 
         <TopNavBar />
       </div>
       <div className="flex flex-row h-full relative">
-        {!hideSideNav && <NavContainer menuId={menuId} />}
+        {!hideSideNav && (
+          <NavContainer>{NavigationMenu ?? <DefaultNavigationMenu menuId={menuId} />}</NavContainer>
+        )}
         <Container>
           <div
             className={cn(
