@@ -30,9 +30,21 @@ to authenticated
 using ( true );
 ```
 
-The `realtime.messages` table is created automatically by Supabase Realtime. It represents your [Channels](/docs/guides/realtime/concepts#channels) as objects against which you can write RLS policies. We test for a user's ability to `SELECT` and `INSERT` into this table to determine whether they can join, read, or post to a Realtime Channel.
+To facilitate authorization in Realtime, a new table `realtime.messages` is created automatically by Supabase Realtime when it connects to your Database. This table represents your [Channels](/docs/guides/realtime/concepts#channels) as objects against which you can write RLS policies.
 
-This approach of using RLS policies to control access should be familiar to users of [Supabase Storage](/docs/guides/storage/security/access-control).
+<Img
+  src={{
+    dark: '/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--dark.png',
+    light:
+      '/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--light.png',
+  }}
+  alt="The table that is used to test the policies."
+/>
+You can write Postgres RLS policies for this table and Realtime will use it them control the access to Broadcast and Presence for your channels based on the operations set in your policies:
+* `SELECT` policies: Able to receive messages from the channel
+* `INSERT` policies: Able to send messages to the channel
+
+This approach to control access should be familiar to users of [Supabase Storage](/docs/guides/storage/security/access-control).
 
 ## How it works without Authorization
 
@@ -139,15 +151,6 @@ To achieve Realtime authorization, we looked into our current solutions, namely 
 We let you define that the channel itself is private! On Channel subscription you are able to inform Realtime to use a private channel and we will do the required checks.
 
 The checks are done by running SELECT and INSERT queries on the new `realtime.messages` table which are then rolled backed so nothing is persisted. Then, based on the query result, we can determine the policies the user has for a given extension.
-
-<Img
-  src={{
-    dark: '/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--dark.png',
-    light:
-      '/images/blog/2024-07-01-supabase-realtime-broadcast-and-presence-authorization/schema--light.png',
-  }}
-  alt="The table that is used to test the policies."
-/>
 
 ### One user, one context, one connection
 
