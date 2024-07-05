@@ -6,7 +6,7 @@ import { type PropsWithChildren } from 'react'
 
 import { type MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
 import { LayoutMainContent } from '~/layouts/DefaultLayout'
-import { MainSkeleton } from '~/layouts/MainSkeleton'
+import { SidebarSkeleton } from '~/layouts/MainSkeleton'
 
 interface LayoutProps extends PropsWithChildren {
   menuId: MenuId
@@ -15,9 +15,9 @@ interface LayoutProps extends PropsWithChildren {
 function ReferenceLayout({ menuId, children }: LayoutProps) {
   return (
     <>
-      <MainSkeleton menuId={menuId}>
+      <SidebarSkeleton menuId={menuId}>
         <LayoutMainContent className="pb-0">{children}</LayoutMainContent>
-      </MainSkeleton>
+      </SidebarSkeleton>
     </>
   )
 }

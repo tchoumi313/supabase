@@ -11,7 +11,7 @@ import ApiOperationSection from './ApiOperationSection'
 import CliCommandSection from './CLICommandSection'
 import OldVersionAlert from './OldVersionAlert'
 import type { IAPISpec, ICommonSection, IRefStaticDoc, ISpec, TypeSpec } from './Reference.types'
-import { MainSkeleton } from '~/layouts/MainSkeleton'
+import { SidebarSkeleton } from '~/layouts/MainSkeleton'
 import MgmtApiOperationSection from '~/components/reference/MgmtApiOperationSection'
 
 interface RefSectionHandlerProps {
@@ -80,7 +80,7 @@ const RefSectionHandler = (props: RefSectionHandlerProps) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="canonical" href={`https://supabase.com${router.basePath}${path}`} />
       </Head>
-      <MainSkeleton menuId={props.menuId}>
+      <SidebarSkeleton menuId={props.menuId}>
         {props.isOldVersion && <OldVersionAlert sections={props.sections} />}
         <RefSubLayout>
           {props.sections.map((section, i) => {
@@ -139,7 +139,7 @@ const RefSectionHandler = (props: RefSectionHandlerProps) => {
             }
           })}
         </RefSubLayout>
-      </MainSkeleton>
+      </SidebarSkeleton>
     </>
   )
 }

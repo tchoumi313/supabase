@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { memo, useEffect, useRef, type PropsWithChildren, type ReactNode } from 'react'
+import { memo, useEffect, type PropsWithChildren, type ReactNode } from 'react'
 
 import { cn } from 'ui'
 
@@ -323,53 +323,58 @@ const NavContainer = memo(function NavContainer({ children }: PropsWithChildren)
   )
 })
 
-interface MainSkeletonProps extends PropsWithChildren {
+interface SkeletonProps extends PropsWithChildren {
   menuId?: MenuId
   NavigationMenu?: ReactNode
 }
 
-function MainSkeleton({ children, menuId, NavigationMenu }: MainSkeletonProps) {
-  const ref = useRef(null)
-  const mobileMenuOpen = useMenuMobileOpen()
-  const hideSideNav = !menuId
-
+function TopNavSkeleton({ children }) {
   return (
     <div className="flex flex-col h-full w-full">
-      <div ref={ref} className="hidden lg:sticky w-full lg:flex top-0 left-0 right-0 z-50">
+      <div className="hidden lg:sticky w-full lg:flex top-0 left-0 right-0 z-50">
         <TopNavBar />
       </div>
-      <div className="flex flex-row h-full relative">
-        {!hideSideNav && (
-          <NavContainer>{NavigationMenu ?? <DefaultNavigationMenu menuId={menuId} />}</NavContainer>
-        )}
-        <Container>
-          <div
-            className={cn(
-              'flex lg:hidden w-full top-0 left-0 right-0 z-50',
-              hideSideNav && 'sticky',
-              mobileMenuOpen && 'z-10'
-            )}
-          >
-            <TopNavBar />
-          </div>
-          <div
-            className={cn(
-              'sticky',
-              'transition-all top-0 z-10',
-              'backdrop-blur backdrop-filter bg-background'
-            )}
-          >
-            {!hideSideNav && <MobileHeader menuId={menuId} />}
-          </div>
-          <div className="grow">
-            {children}
-            <Footer />
-          </div>
-          <MobileMenuBackdrop />
-        </Container>
-      </div>
+      {children}
     </div>
   )
 }
 
-export { MainSkeleton }
+function SidebarSkeleton({ children, menuId, NavigationMenu }: SkeletonProps) {
+  const mobileMenuOpen = useMenuMobileOpen()
+  const hideSideNav = !menuId
+
+  return (
+    <div className="flex flex-row h-full relative">
+      {!hideSideNav && (
+        <NavContainer>{NavigationMenu ?? <DefaultNavigationMenu menuId={menuId} />}</NavContainer>
+      )}
+      <Container>
+        <div
+          className={cn(
+            'flex lg:hidden w-full top-0 left-0 right-0 z-50',
+            hideSideNav && 'sticky',
+            mobileMenuOpen && 'z-10'
+          )}
+        >
+          <TopNavBar />
+        </div>
+        <div
+          className={cn(
+            'sticky',
+            'transition-all top-0 z-10',
+            'backdrop-blur backdrop-filter bg-background'
+          )}
+        >
+          {!hideSideNav && <MobileHeader menuId={menuId} />}
+        </div>
+        <div className="grow">
+          {children}
+          <Footer />
+        </div>
+        <MobileMenuBackdrop />
+      </Container>
+    </div>
+  )
+}
+
+export { TopNavSkeleton, SidebarSkeleton }
