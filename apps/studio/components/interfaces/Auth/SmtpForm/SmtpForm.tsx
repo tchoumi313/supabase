@@ -31,6 +31,7 @@ import EmailRateLimitsAlert from '../EmailRateLimitsAlert'
 import { urlRegex } from './../Auth.constants'
 import { defaultDisabledSmtpFormValues } from './SmtpForm.constants'
 import { generateFormValues, isSmtpEnabled } from './SmtpForm.utils'
+import ReactMarkdown from 'react-markdown'
 
 const SmtpForm = () => {
   const { ref: projectRef } = useParams()
@@ -50,6 +51,7 @@ const SmtpForm = () => {
   const initialValues = generateFormValues(authConfig)
   const canReadConfig = useCheckPermissions(PermissionAction.READ, 'custom_config_gotrue')
   const canUpdateConfig = useCheckPermissions(PermissionAction.UPDATE, 'custom_config_gotrue')
+  const [showAwsHint, setShowAwsnHint] = useState(false)
 
   useEffect(() => {
     if (isSuccess && isSmtpEnabled(authConfig)) {
@@ -169,6 +171,7 @@ const SmtpForm = () => {
         useEffect(() => {
           if (isSuccess) {
             const formValues = generateFormValues(authConfig)
+            setShowAwsnHint((formValues?.SMTP_HOST || '').toLowerCase().includes('aws'))
             resetForm({ values: formValues, initialValues: formValues })
           }
         }, [isSuccess, authConfig])
@@ -176,6 +179,11 @@ const SmtpForm = () => {
         const onResetForm = () => {
           setEnableSmtp(isSmtpEnabled(initialValues))
           resetForm({ values: initialValues })
+        }
+
+        const onSmtpChange = (event: any) => {
+          const value = event.target.value
+          setShowAwsnHint(value.toLowerCase().includes('aws'))
         }
 
         return (
@@ -298,7 +306,22 @@ const SmtpForm = () => {
                     label="Host"
                     descriptionText="Hostname or IP address of your SMTP server."
                     disabled={!canUpdateConfig}
+                    onChange={onSmtpChange}
                   />
+                  {showAwsHint && (
+                    <Alert_Shadcn_ variant="warning">
+                      <IconAlertTriangle strokeWidth={2} />
+                      <AlertTitle_Shadcn_>AWS SES Configuartion</AlertTitle_Shadcn_>
+                      <AlertDescription_Shadcn_>
+                        <ReactMarkdown>
+                          It looks like you are using AWS SES as your SMTP provider. Some extra
+                          configuration may be needed, Please check out the AWS SES Documentation
+                          [here](https://docs.aws.amazon.com/ses/latest/dg/Welcome.html)
+                        </ReactMarkdown>
+                      </AlertDescription_Shadcn_>
+                    </Alert_Shadcn_>
+                  )}
+
                   <InputNumber
                     name="SMTP_PORT"
                     id="SMTP_PORT"
