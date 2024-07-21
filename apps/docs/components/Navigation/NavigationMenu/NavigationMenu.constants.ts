@@ -203,6 +203,7 @@ export const REFERENCES: References = {
     library: 'supabase-js',
     versions: ['v2', 'v1'],
     icon: '/img/libraries/javascript-icon',
+    __MIGRATED_VERSIONS: ['v2'],
   },
   dart: {
     name: 'Flutter',
@@ -2091,6 +2092,10 @@ export const reference_javascript_v1 = {
   title: 'JavaScript',
   url: '/guides/reference/javascript',
   parent: '/reference',
+  pkg: {
+    name: '@supabase/supabase-js',
+    repo: 'https://github.com/supabase/supabase-js',
+  },
 }
 
 export const reference_javascript_v2 = {
@@ -2098,6 +2103,10 @@ export const reference_javascript_v2 = {
   title: 'JavaScript',
   url: '/guides/reference/javascript',
   parent: '/reference',
+  pkg: {
+    name: '@supabase/supabase-js',
+    repo: 'https://github.com/supabase/supabase-js',
+  },
 }
 
 export const reference_dart_v1 = {
@@ -2105,6 +2114,10 @@ export const reference_dart_v1 = {
   title: 'Flutter',
   url: '/guides/reference/dart',
   parent: '/reference',
+  pkg: {
+    name: 'supabase_flutter',
+    repo: 'https://github.com/supabase/supabase-flutter',
+  },
 }
 
 export const reference_dart_v2 = {
@@ -2112,6 +2125,10 @@ export const reference_dart_v2 = {
   title: 'Flutter',
   url: '/guides/reference/dart',
   parent: '/reference',
+  pkg: {
+    name: 'supabase_flutter',
+    repo: 'https://github.com/supabase/supabase-flutter',
+  },
 }
 
 export const reference_csharp_v0 = {
@@ -2119,6 +2136,10 @@ export const reference_csharp_v0 = {
   title: 'C#',
   url: 'guides/reference/csharp',
   parent: '/reference',
+  pkg: {
+    name: 'supabase',
+    repo: 'https://github.com/supabase-community/supabase-csharp',
+  },
 }
 
 export const reference_csharp_v1 = {
@@ -2126,6 +2147,10 @@ export const reference_csharp_v1 = {
   title: 'C#',
   url: 'guides/reference/csharp',
   parent: '/reference',
+  pkg: {
+    name: 'supabase',
+    repo: 'https://github.com/supabase-community/supabase-csharp',
+  },
 }
 
 export const reference_python_v2 = {
@@ -2133,6 +2158,10 @@ export const reference_python_v2 = {
   title: 'Python',
   url: '/guides/reference/python',
   parent: '/reference',
+  pkg: {
+    name: 'supabase-py',
+    repo: 'https://github.com/supabase-community/supabase-py',
+  },
 }
 
 export const reference_swift_v1 = {
@@ -2140,6 +2169,10 @@ export const reference_swift_v1 = {
   title: 'swift',
   url: 'guides/reference/swift',
   parent: '/reference',
+  pkg: {
+    name: 'supabase-swift',
+    repo: 'https://github.com/supabase/supabase-swift',
+  },
 }
 
 export const reference_swift_v2 = {
@@ -2147,6 +2180,10 @@ export const reference_swift_v2 = {
   title: 'swift',
   url: 'guides/reference/swift',
   parent: '/reference',
+  pkg: {
+    name: 'supabase-swift',
+    repo: 'https://github.com/supabase/supabase-swift',
+  },
 }
 
 export const reference_kotlin_v1 = {
@@ -2154,6 +2191,10 @@ export const reference_kotlin_v1 = {
   title: 'kotlin',
   url: 'guides/reference/kotlin',
   parent: '/reference',
+  pkg: {
+    name: '@supabase-community/supabase-kt',
+    repo: 'https://github.com/supabase-community/supabase-kt',
+  },
 }
 
 export const reference_kotlin_v2 = {
@@ -2161,6 +2202,10 @@ export const reference_kotlin_v2 = {
   title: 'kotlin',
   url: 'guides/reference/kotlin',
   parent: '/reference',
+  pkg: {
+    name: '@supabase-community/supabase-kt',
+    repo: 'https://github.com/supabase-community/supabase-kt',
+  },
 }
 
 export const reference_cli = {
