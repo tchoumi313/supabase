@@ -8,9 +8,14 @@ const ErrorPage = () => (
     <span className="text-center text-5xl text-foreground-lighter">
       Sorry, something went wrong
     </span>
-    <Button asChild type="secondary" className="w-fit p-4 text-lg">
-      <Link href="/">Return to homepage</Link>
-    </Button>
+    <div className="flex flex-row items-center gap-4">
+      <Button asChild type="secondary" className="w-fit p-4 text-lg">
+        <Link href="/">Return to homepage</Link>
+      </Button>
+      <Button type="secondary" className="w-fit p-4 text-lg" onClick={() => location.reload()}>
+        Refresh page
+      </Button>
+    </div>
   </div>
 )
 
